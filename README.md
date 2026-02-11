@@ -1,13 +1,10 @@
 # ⚡ GlobalCharge: Strategic EV Investment Audit
 
 ### 🔗 Project Links
-* **[🚀 Launch Live Strategy Engine (Streamlit)](https://globalcharge-ev-strategy-6pra3gmhystj6rinzfufuv.streamlit.app/)** *The functional backend utilizing Random Forest for real-time ROI calculation.*
+* **[🚀 Launch Live Strategy Engine (Streamlit)](https://globalcharge-ev-strategy-hxnlpbri2qdtnuyfz9eeu2.streamlit.app/)** *The functional backend utilizing Random Forest for real-time ROI calculation.*
 * **[🎨 View UI/UX Dashboard Prototype (React)](https://claude.ai/public/artifacts/31d69ba2-7f27-4157-989b-db74ad75e3d2)** *The frontend vision for the Board of Directors presentation.*
 
 ---
-
-## 📊 Project Overview
-(Rest of your README...)
 
 ## 📊 Project Overview
 This project serves as a strategic "War Room" for GlobalCharge. We utilize Machine Learning (Random Forest) and custom ROI indexing to identify resilient markets for electric vehicle infrastructure investment.
