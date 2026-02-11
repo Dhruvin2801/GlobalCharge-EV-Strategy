@@ -19,101 +19,107 @@ if df is None:
     st.error("⚠️ 'streamlit_data.csv' missing. Upload it to your repo.")
     st.stop()
 
-# --- 3. SIDEBAR: NAVIGATION & PARAMETERS ---
-st.sidebar.title("🌍 Market Controls")
-selected_country = st.sidebar.selectbox("🔍 Select Country to Analyze", sorted(df['country'].unique()))
+# --- 3. THE MATH & PARAMETERS ---
+st.sidebar.title("⚙️ Strategy Parameters")
+st.sidebar.markdown("Adjust the weights to simulate different $100M Board mandates.")
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("⚙️ ROI Parameters")
+w_safety = st.sidebar.slider("🛡️ Resilience Weight (Survival)", 0.0, 2.0, 1.0)
+st.sidebar.caption("ℹ️ **Use:** Prioritizes markets that survive subsidy cuts. AI predicts this based on historical momentum and wealth.")
 
-w_safety = st.sidebar.slider("🛡️ Resilience Weight", 0.0, 2.0, 1.0)
-with st.sidebar.expander("What does Resilience mean?"):
-    st.write("Prioritizes markets with a high AI 'Survival Probability'. A high weight here means we only invest in countries that will survive sudden policy shocks (like subsidy cuts).")
-
-w_room = st.sidebar.slider("📈 Market Room Weight", 0.0, 2.0, 1.0)
-with st.sidebar.expander("What does Market Room mean?"):
-    st.write("Prioritizes markets that are mostly untapped. A country with 80% market room still has massive growth potential before hitting saturation.")
+w_room = st.sidebar.slider("📈 Market Room Weight (Opportunity)", 0.0, 2.0, 1.0)
+st.sidebar.caption("ℹ️ **Use:** Avoids saturated markets (like Norway). High weight finds countries early in the adoption curve.")
 
 w_wealth = st.sidebar.slider("💰 Wealth Weight (GDP)", 0.0, 2.0, 1.0)
-with st.sidebar.expander("What does Wealth mean?"):
-    st.write("Prioritizes purchasing power. It measures whether the local population can actually afford EVs without relying on government handouts.")
+st.sidebar.caption("ℹ️ **Use:** Ensures the population has the actual purchasing power to buy EVs without government handouts.")
 
-# --- 4. LIVE ROI CALCULATION ---
-# Formula: (Survival * Room * Wealth) / (1 + Saturation)
+# LIVE ROI CALCULATION
 df['ROI_Score'] = (
     (df['Survival_Prob'] ** w_safety) * (df['market_room'] ** w_room) * (df['purchasing_power'] ** w_wealth)
 ) / (1 + df['infra_saturation']) * 100
 
 top_targets = df.nlargest(10, 'ROI_Score')
-country_data = df[df['country'] == selected_country].iloc[0]
 
-# --- 5. REAL WORLD CONTEXT ENGINE ---
+# --- 4. REAL WORLD CONTEXT ENGINE ---
 def get_real_world_context(country):
     context = {
-        "Germany": "⚠️ **Policy Shock & Tariff Exposure:** In Dec 2023, Germany abruptly cancelled all EV subsidies, causing a ~35% sales crash in early 2024. Furthermore, the 25% US auto import tariffs (implemented April 2025) place severe strain on its export-heavy automotive core. Our model flags this as a highly volatile transition environment.",
-        "United States": "🛡️ **Protectionist Environment:** In May 2024, the US implemented a 100% tariff on Chinese EVs under Section 301, shielding domestic automakers. While this protects local pricing, EV adoption remains heavily dependent on regional charging density and federal tax credits.",
-        "China": "🏭 **Supply Chain Dominance:** China accounts for the vast majority of global EV sales. Facing severe 2024/2025 tariffs from the US (100%) and EU, China's domestic market is in a hyper-competitive price war, pushing massive export volumes to secondary markets.",
-        "Norway": "✅ **Market Saturation:** Norway is past the 'Takeoff' phase and into deep market saturation. Subsidies are naturally phasing out because EVs have reached price parity. It is structurally resilient but offers very low 'Market Room' for explosive new growth.",
-        "Mexico": "📈 **Nearshoring Beneficiary:** Mexico's EV market is strongly influenced by manufacturing nearshoring to comply with USMCA trade rules. Domestic adoption is increasingly driven by operational cost savings for commercial fleets rather than consumer subsidies."
+        "Germany": "⚠️ **Policy Shock:** In Dec 2023, Germany abruptly cancelled all EV subsidies, causing a ~35% sales crash in early 2024. Our AI flagged this vulnerability.",
+        "USA": "🛡️ **Protectionism & Tariffs:** Implemented 100% tariffs on Chinese EVs in 2024. Growth is heavily dependent on IRA tax credits and charging infrastructure build-out.",
+        "China": "🏭 **Supply Chain Dominance:** Accounts for ~60% of global sales. Facing severe 2024 tariffs from the US/EU, causing a domestic price war.",
+        "Norway": "✅ **Saturation Phase:** EV share is near 90%. Structural resilience is 100%, but 'Market Room' is zero. Bad for high-growth venture capital.",
+        "Mexico": "📈 **Nearshoring:** Growth driven by commercial fleet electrification and USMCA supply chain integration rather than consumer subsidies.",
+        "Brazil": "🌾 **Alternative Fuels:** Competition from established ethanol/biofuel infrastructure delays pure BEV adoption, creating unique market friction."
     }
-    return context.get(country, "ℹ️ **Standard Market Dynamics:** This market's trajectory is primarily driven by domestic purchasing power and gradual infrastructure build-out. No critical black-swan policy events recorded in the current analysis window.")
+    return context.get(country, f"ℹ️ **Standard Dynamics:** {country} adoption is governed by local wealth and infrastructure pace. No extreme policy shocks registered.")
 
-# --- 6. MAIN TABS ---
-tab1, tab2, tab3 = st.tabs(["🌍 Global Map", "🔍 Country Deep-Dive", "📊 Comparison Dashboard"])
+# --- 5. MAIN INTERFACE ---
+tab_map, tab_compare = st.tabs(["🌍 Global Choropleth & Deep Dive", "⚖️ Multi-Country Comparison"])
 
-# TAB 1: THE MAP
-with tab1:
-    st.subheader("Global ROI Heatmap")
-    st.markdown("Use the Sidebar sliders to adjust the strategy. The map updates in real-time.")
+# --- TAB 1: INTERACTIVE MAP & DEEP DIVE ---
+with tab_map:
+    st.subheader("Global ROI Heatmap (Tableau Style)")
+    st.markdown("Darker shades indicate a higher Risk-Adjusted ROI Score based on your parameters.")
+    
+    # 1. The Choropleth Map
     loc_col = "iso_alpha" if 'iso_alpha' in df.columns else "country"
-    fig_map = px.scatter_geo(
+    fig_map = px.choropleth(
         df, locations=loc_col, locationmode="ISO-3" if 'iso_alpha' in df.columns else "country names",
-        color="ROI_Score", size="ROI_Score", hover_name="country",
-        projection="natural earth", color_continuous_scale="Viridis"
+        color="ROI_Score", hover_name="country",
+        hover_data={"Survival_Prob": ":.1%", "market_room": ":.1%", "ROI_Score": ":.1f"},
+        color_continuous_scale="Viridis", projection="natural earth"
     )
+    fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, geo=dict(showocean=True, oceancolor="LightBlue"))
+    
+    # Map Selection (Native Streamlit or Fallback)
     st.plotly_chart(fig_map, use_container_width=True)
-
-# TAB 2: COUNTRY DEEP DIVE
-with tab2:
-    st.subheader(f"Target Analysis: {selected_country}")
     
-    colA, colB, colC = st.columns(3)
-    # Classification 1: Takeoff / Growth Stage
-    takeoff_status = "🚀 High Potential" if (country_data['EV_Share_Pct'] > 2 and country_data['EV_Share_Pct'] < 20) else "📉 Saturated / Early"
-    colA.metric("Classification 1: Market Stage", takeoff_status, f"{country_data['EV_Share_Pct']}% Current Share")
-    
-    # Classification 2: Resilience
-    resilience_status = "✅ Resilient" if country_data['Survival_Prob'] > 0.65 else "⚠️ Vulnerable"
-    colB.metric("Classification 2: AI Safety", resilience_status, f"{country_data['Survival_Prob']:.1%} Survival Prob")
-    
-    # Final ROI
-    colC.metric("Strategic ROI Score", f"{country_data['ROI_Score']:.1f}")
-
+    # 2. Deep Dive Selection
     st.divider()
-    st.markdown("### 📰 Real-World Market Intelligence")
+    st.subheader("🔍 Country Deep-Dive Profile")
+    selected_country = st.selectbox("Select a country manually (or from map visually):", sorted(df['country'].unique()), index=sorted(df['country'].unique()).index('Germany'))
+    
+    country_data = df[df['country'] == selected_country].iloc[0]
+    
+    # 3. Deep Dive Metrics
     st.info(get_real_world_context(selected_country))
-
-    st.markdown("### 📊 Local Fundamentals")
-    m1, m2, m3 = st.columns(3)
-    m1.metric("GDP Per Capita", f"${country_data['GDP_per_capita']:,.0f}")
-    m2.metric("Market Room", f"{country_data['market_room']:.1%}")
-    m3.metric("Infra Saturation Score", f"{country_data['infra_saturation']:.2f}")
-
-# TAB 3: DASHBOARD
-with tab3:
-    st.subheader("Top 10 Targets & Portfolio Allocation")
     
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        total_score = top_targets['ROI_Score'].sum()
-        top_targets['Investment ($M)'] = (top_targets['ROI_Score'] / total_score) * 100
-        fig_pie = px.pie(top_targets, values='Investment ($M)', names='country', hole=0.4, color_discrete_sequence=px.colors.sequential.Greens_r)
-        st.plotly_chart(fig_pie, use_container_width=True)
+    col1, col2, col3 = st.columns(3)
     
-    with col2:
-        display_cols = ['country', 'Survival_Prob', 'ROI_Score', 'Investment ($M)']
-        st.dataframe(
-            top_targets[display_cols].sort_values('ROI_Score', ascending=False)
-            .style.format({'Survival_Prob': '{:.1%}', 'ROI_Score': '{:.1f}', 'Investment ($M)': '${:.1f}M'}),
-            use_container_width=True, height=350
+    # AI Classification
+    is_takeoff = "🚀 High Growth Phase" if country_data['EV_Share_Pct'] < 20 else "📈 Mature Market"
+    is_resilient = "✅ Safe Haven" if country_data['Survival_Prob'] > 0.60 else "⚠️ Policy Dependent"
+    
+    col1.metric("Classification 1: Stage", is_takeoff, f"Share: {country_data['EV_Share_Pct']}%")
+    col2.metric("Classification 2: AI Safety", is_resilient, f"Survival: {country_data['Survival_Prob']:.1%}")
+    col3.metric("Calculated ROI Score", f"{country_data['ROI_Score']:.1f}", "Based on Sliders")
+
+# --- TAB 2: DASHBOARD COMPARISON ---
+with tab_compare:
+    st.subheader("⚖️ Target Market Comparison Dashboard")
+    st.markdown("Select multiple countries to compare their fundamentals side-by-side.")
+    
+    compare_countries = st.multiselect(
+        "Select Countries to Compare:", 
+        options=sorted(df['country'].unique()), 
+        default=["USA", "Germany", "China", "Norway"]
+    )
+    
+    if compare_countries:
+        compare_df = df[df['country'].isin(compare_countries)]
+        
+        # Bar Chart Comparison
+        fig_bar = px.bar(
+            compare_df, x="country", y=["Survival_Prob", "market_room"], 
+            barmode="group", title="AI Survival vs. Remaining Market Room",
+            labels={"value": "Percentage (0 to 1)", "variable": "Metric"}
         )
+        st.plotly_chart(fig_bar, use_container_width=True)
+        
+        # Raw Data Table
+        display_cols = ['country', 'Survival_Prob', 'ROI_Score', 'EV_Share_Pct', 'GDP_per_capita']
+        st.dataframe(
+            compare_df[display_cols].sort_values('ROI_Score', ascending=False)
+            .style.format({'Survival_Prob': '{:.1%}', 'ROI_Score': '{:.1f}', 'GDP_per_capita': '${:,.0f}', 'EV_Share_Pct': '{:.1f}%'}),
+            use_container_width=True
+        )
+    else:
+        st.warning("Please select at least one country to compare.")
