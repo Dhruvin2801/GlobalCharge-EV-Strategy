@@ -3,8 +3,17 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# --- 1. CONFIG ---
+# --- 1. SETUP & BRANDING ---
 st.set_page_config(page_title="GlobalCharge War Room", layout="wide", page_icon="⚡")
+
+st.markdown("""
+    <style>
+    .main { background-color: #0b0f1a; color: #e8edf5; }
+    .stMetric { background-color: #111827; padding: 15px; border-radius: 12px; border: 1px solid #1e2d45; }
+    h1, h2, h3 { color: #00d4aa !important; }
+    .stButton>button { background-color: #00d4aa; color: black; font-weight: bold; width: 100%; border-radius: 25px; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- 2. DATA LOADER ---
 @st.cache_data
@@ -18,89 +27,95 @@ if df is None:
     st.error("❌ 'war_room_data_v3.csv' missing. Upload it to GitHub.")
     st.stop()
 
-# --- 3. THE POP-UP ENGINE ---
-@st.dialog("🧠 Market Intelligence Pop-up", width="large")
-def show_briefing(target):
-    data = df[df['country'] == target].iloc[0]
+# --- 3. THE POP-UP DIALOG ENGINE ---
+@st.dialog("🧠 Market Intelligence Briefing", width="large")
+def show_intelligence(country_name):
+    row = df[df['country'] == country_name].iloc[0]
     
-    st.subheader(f"Strategic Audit: {target}")
+    st.subheader(f"Strategic Audit: {country_name}")
     
-    # 2 Classifications
+    # 1. TWO CLASSIFICATIONS & JUSTIFICATION
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("**1. Market Lifecycle**")
-        status = "🚀 Takeoff" if data['EV_Share_Pct'] < 20 else "📈 Mature"
-        st.info(f"**{status}**\n\nJustification: Based on S-Curve analysis. Current share is {data['EV_Share_Pct']}%.")
+        st.markdown("**🛡️ Classification 1: Market Maturity**")
+        status = "🚀 Takeoff" if row['EV_Share_Pct'] < 20 else "📈 Mature"
+        st.info(f"**Status: {status}**\n\n**Justification:** Based on S-Curve theory. {country_name} currently has a {row['EV_Share_Pct']}% share, placing it in the {status.lower()} phase.")
     with c2:
-        st.markdown("**2. AI Resilience Grade**")
-        safety = "✅ Safe" if data['Survival_Prob'] > 0.6 else "⚠️ Volatile"
-        st.warning(f"**{safety}**\n\nJustification: Random Forest predicts {data['Survival_Prob']:.1%} survival in subsidy-free environments.")
+        st.markdown("**🤖 Classification 2: AI Resilience**")
+        safety = "✅ Safe Haven" if row['Survival_Prob'] > 0.6 else "⚠️ High Risk"
+        st.warning(f"**Grade: {safety}**\n\n**Justification:** Random Forest model predicts a {row['Survival_Prob']:.1%} survival probability in a zero-subsidy regime.")
 
     st.divider()
     
-    # 2023 vs 2024 Change
-    st.markdown("### 🕰️ 2023 ➔ 2024 Regime Shift")
-    m1, m2 = st.columns(2)
-    share_diff = data['EV_Share_Pct'] - data['EV_Share_Pct_2023']
-    pol_diff = data['Policy_Score'] - data['Policy_Score_2023']
+    # 2. 2023 VS 2024 DIFFERENCE
+    st.markdown("### 🕰️ Regime Shift Analysis (2023 ➔ 2024)")
+    m1, m2, m3 = st.columns(3)
     
-    m1.metric("Market Share Delta", f"{data['EV_Share_Pct']}%", f"{share_diff:+.1f}% shift")
-    m2.metric("Policy Support Delta", f"{data['Policy_Score']:.1f}", f"{pol_diff:+.1f} points")
+    s_diff = row['EV_Share_Pct'] - row['EV_Share_Pct_2023']
+    p_diff = row['Policy_Score'] - row['Policy_Score_2023']
+    
+    m1.metric("Market Share", f"{row['EV_Share_Pct']}%", f"{s_diff:+.1f}% vs 2023")
+    m2.metric("Gov Support", f"{row['Policy_Score']:.1f}", f"{p_diff:+.1f} vs 2023")
+    m3.metric("AI Confidence", f"{row['Survival_Prob']:.1%}", "Resilience")
 
-    # Why & Real World Events
+    # 3. WHY & REAL WORLD EVENTS
     st.markdown("### 📰 Why is this happening?")
-    events = {
-        "Germany": "Abrupt cancellation of EV subsidies in late 2023 caused a 35% sales crash. High GDP but low resilience score due to political flip-flops.",
-        "USA": "100% tariffs on Chinese imports implemented in 2024 protects domestic margins. ROI is driven by infrastructure build-out and IRA credits.",
-        "Norway": "Market saturation reached. Zero 'Market Room' for new explosive growth, but 100% resilient. A low-ROI 'Maintenance' zone.",
-        "China": "Intense price wars and charging over-saturation. Massive volumes but thinning profit margins per charging plug."
+    briefings = {
+        "Germany": "**⚠️ The Subsidy Crash:** ROI rating reflects the Dec 2023 'Umweltbonus' cancellation. The AI correctly predicted the 35% sales drop in early 2024. The market is now struggling to transition to organic growth.",
+        "USA": "**🛡️ Trade War Shielding:** 100% tariffs on Chinese imports implemented in May 2024 protects domestic margins. ROI is driven by infrastructure build-out and federal IRA tax credits.",
+        "Norway": "**✅ Market Saturation:** Structural resilience is 100%, but ROI is capped. With 90% share, there is zero 'Market Room' left for high-alpha deployment. This is now a low-yield maintenance zone.",
+        "China": "**🏭 Post-Subsidy Consolidation:** Market has shifted from government aid to extreme price wars. High volume exists, but over-saturation in charging stations reduces the ROI for new capital.",
+        "Mexico": "**📈 Nearshoring Alpha:** Growth is driven by commercial fleet electrification to comply with USMCA supply chain rules. This is immune to consumer subsidy shocks."
     }
-    st.info(events.get(target, "Trajectory is driven by organic purchasing power and charging density. No major black-swan events detected."))
+    st.success(briefings.get(country_name, "ℹ️ **Market Fundamentals:** Trajectory is governed by local purchasing power and charging density expansion. No major policy black-swan events recorded in the 2024 audit window."))
 
-    # ROI Justification
-    st.markdown(f"### 💰 ROI Justification: **{data['ROI_Score']:.1f}**")
-    st.write(f"Rating reflects high purchasing power (${data['GDP_per_capita']:,.0f}) vs infrastructure cost.")
+    # 4. ROI JUSTIFICATION
+    st.markdown(f"### 💰 Final ROI Justification: **{row['ROI_Score']:.1f}**")
+    st.write(f"The score for {country_name} is derived from its high GDP per capita (${row['GDP_per_capita']:,.0f}) which ensures sustainable buying power, balanced against its current charging plug density.")
 
 # --- 4. MAIN INTERFACE ---
-st.markdown("<h1 style='text-align: center; color: #18BC9C;'>⚡ GlobalCharge Strategic Intelligence Engine</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>⚡ GlobalCharge Strategic Investment Engine</h1>", unsafe_allow_html=True)
 
-# SIDEBAR PARAMETERS
+# SIDEBAR CONTROLS
 st.sidebar.title("💎 Strategy Console")
 w_safety = st.sidebar.slider("🛡️ Resilience", 0.0, 2.0, 1.0)
 w_room = st.sidebar.slider("📈 Opportunity", 0.0, 2.0, 1.0)
 w_wealth = st.sidebar.slider("💰 Wealth", 0.0, 2.0, 1.0)
 
-# LIVE MATH
+# LIVE ROI MATH
 df['ROI_Score'] = ((df['Survival_Prob']**w_safety) * (df['market_room']**w_room) * (df['purchasing_power']**w_wealth)) / (1+df['infra_saturation']) * 100
 
-# TAB 1: THE MAP & DRILL-DOWN
-st.subheader("Phase 1: Global Scan")
+# PHASE 1: MAP
+st.subheader("Phase 1: Global Scan (Click a country to select)")
 fig_map = px.choropleth(df, locations="iso_alpha", color="ROI_Score", hover_name="country", color_continuous_scale="Viridis", projection="natural earth")
-fig_map.update_layout(height=500, margin={"r":0,"t":0,"l":0,"b":0})
+fig_map.update_layout(height=500, margin={"r":0,"t":0,"l":0,"b":0}, clickmode='event+select')
 
-# Capture selection
+# The Interactive Trigger
 selected_map = st.plotly_chart(fig_map, use_container_width=True, on_select="rerun")
 
-st.divider()
-
-# TAB 2: TRIGGER
-st.subheader("Phase 2: Deep-Dive Audit")
-# Logic to sync map click
-map_country = "USA"
+# Sync selection logic
+map_target = "USA"
 if selected_map and selected_map["selection"]["points"]:
-    map_country = selected_map["selection"]["points"][0]["hovertext"]
+    map_target = selected_map["selection"]["points"][0]["hovertext"]
 
-c_list = sorted(df['country'].unique())
-selected_country = st.selectbox("Current Selection:", c_list, index=c_list.index(map_country))
-
-if st.button(f"🔎 Launch {selected_country} Intelligence Pop-up"):
-    show_briefing(selected_country)
-
-# TAB 3: DASHBOARD
 st.divider()
-st.subheader("Phase 3: Multi-Market Comparison")
-compare = st.multiselect("Select Assets:", c_list, default=["USA", "Germany", "Norway"])
+
+# PHASE 2: DRILL DOWN
+st.subheader("Phase 2: Tactical Intelligence Briefing")
+col_l, col_r = st.columns([1, 2])
+with col_l:
+    c_list = sorted(df['country'].unique())
+    selected_country = st.selectbox("Current Selection:", c_list, index=c_list.index(map_target))
+    if st.button(f"🔍 Audit {selected_country}"):
+        show_intelligence(selected_country)
+with col_r:
+    st.info("💡 **INTERACTIVE:** Click a country on the map above, then click the **'Audit'** button here to launch the full Strategic Briefing Pop-up.")
+
+# PHASE 3: COMPARISON
+st.divider()
+st.subheader("Phase 3: Portfolio Asset Comparison")
+compare = st.multiselect("Select Markets to Compare:", options=c_list, default=["USA", "Germany", "Norway"])
 if compare:
-    comp_df = df[df['country'].isin(compare)]
+    comp_df = df[df['country'].isin(compare)].sort_values('ROI_Score', ascending=False)
     st.bar_chart(comp_df.set_index('country')['ROI_Score'])
-    st.dataframe(comp_df[['country', 'ROI_Score', 'Survival_Prob', 'market_room']].style.format({'Survival_Prob': '{:.1%}', 'market_room': '{:.1%}'}), use_container_width=True)
+    st.dataframe(comp_df[['country', 'ROI_Score', 'Survival_Prob', 'market_room', 'GDP_per_capita']].style.format({'Survival_Prob': '{:.1%}', 'market_room': '{:.1%}'}), use_container_width=True)
