@@ -20,7 +20,7 @@ st.markdown("""
 # --- 2. DATA LOADER ---
 @st.cache_data
 def load_data():
-    if os.path.exists('war_room_data_v3.csv'):
+    if os.path.exists('war_room_data.csv'):
         return pd.read_csv('war_room_data_v3.csv')
     return None
 
