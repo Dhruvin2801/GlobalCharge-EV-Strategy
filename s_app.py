@@ -61,53 +61,70 @@ if df is None:
 
 df['Base_ROI'] = (df['Survival_Prob'] * df['market_room'] * df['purchasing_power']) / (1 + df['infra_saturation']) * 100
 
-# --- 3. DEEP INTELLIGENCE ENGINE ---
-def get_comprehensive_intel(country, custom_roi):
+# --- 3. DYNAMIC INTELLIGENCE ENGINE ---
+def get_comprehensive_intel(country, c_data, custom_roi):
     intel = {
         "Germany": (
             "⚠️ Constitutional Crisis & The Subsidy Cliff",
-            "**2023-2024 Regime Shift:** In December 2023, the German Federal Constitutional Court struck down €60 billion in climate funding. This forced the immediate, premature cancellation of the *Umweltbonus* (up to €4,500 per EV). Consequently, H1 2024 saw a brutal 30%+ collapse in domestic EV sales. European OEMs (VW, Mercedes) have formally delayed their ICE phase-out targets as a result.",
-            f"**Strategic ROI ({custom_roi:.1f}):** The AI model severely penalizes Germany's Resilience score. The data proves the market was artificially propped up by state aid rather than structural utility. Despite a massive $55k GDP/Capita providing organic purchasing power, the extreme political volatility and high existing infrastructure density make this a high-risk capital deployment zone."
+            "**2023-2024 Regime Shift:** In December 2023, the German Federal Constitutional Court struck down €60 billion in climate funding. This forced the immediate cancellation of the *Umweltbonus*. Consequently, H1 2024 saw a brutal 30%+ collapse in domestic EV sales. European OEMs (VW, Mercedes) have formally delayed their ICE phase-out targets as a result.",
+            f"**Strategic ROI ({custom_roi:.1f}):** The AI severely penalizes Germany's Resilience score. The data proves the market was artificially propped up by state aid. Despite a massive $55k GDP/Capita, extreme political volatility makes this a high-risk capital deployment zone."
         ),
         "USA": (
             "🛡️ IRA Deployment & Section 301 Trade Walls",
-            "**2023-2024 Regime Shift:** The US market underwent a structural isolation event. In May 2024, the Biden Administration enacted 100% Section 301 tariffs on Chinese EVs, effectively blocking BYD and NIO from undercutting domestic OEMs. Concurrently, the NEVI Formula Program transitioned from planning to breaking ground, injecting billions into domestic highway charging corridors.",
-            f"**Strategic ROI ({custom_roi:.1f}):** The USA is classified as a 'Safe Haven' with massive Protected Alpha. Growth is guaranteed by long-term Inflation Reduction Act (IRA) 30D tax credits locked through 2030, virtually eliminating European-style 'Subsidy Cliff' risks. High wealth and artificially protected margins yield top-tier infrastructure ROI."
+            "**2023-2024 Regime Shift:** The US market underwent a structural isolation event. In May 2024, the Biden Administration enacted 100% Section 301 tariffs on Chinese EVs, blocking low-cost competition. Concurrently, the NEVI Formula Program transitioned from planning to breaking ground, injecting billions into domestic highway corridors.",
+            f"**Strategic ROI ({custom_roi:.1f}):** The USA is classified as a 'Safe Haven' with massive Protected Alpha. Growth is guaranteed by long-term IRA 30D tax credits locked through 2030, virtually eliminating European-style 'Subsidy Cliff' risks."
         ),
         "Norway": (
             "✅ The Saturation Trap & Fiscal Rollbacks",
-            "**2023-2024 Regime Shift:** Norway has completed the S-Curve (approaching 90% share). Recognizing peak adoption, the Norwegian government initiated a fiscal pullback in 2024. They implemented a new weight-based registration tax and applied a 25% VAT to luxury EVs (over 500k NOK) to recoup lost fossil-fuel road tax revenues. The hyper-growth era is officially over.",
-            f"**Strategic ROI ({custom_roi:.1f}):** While the AI predicts 100% survival probability (the market functions entirely without subsidies now), the ROI is mechanically suppressed. There is functionally zero 'Market Room' remaining. Deploying a new $100M fund here operates as a low-yield public utility play rather than a venture-growth investment."
+            "**2023-2024 Regime Shift:** Norway has completed the S-Curve (approaching 90% share). Recognizing peak adoption, the government initiated a fiscal pullback in 2024, implementing a new weight-based registration tax and a 25% VAT on luxury EVs to recoup lost fossil-fuel road tax revenues.",
+            f"**Strategic ROI ({custom_roi:.1f}):** While the AI predicts 100% survival probability, the ROI is mechanically suppressed. There is functionally zero 'Market Room' remaining. Deploying a new $100M fund here operates as a low-yield public utility play rather than a venture-growth investment."
         ),
         "China": (
-            "🏭 Post-Subsidy Hyper-Competition & Export Pivots",
-            "**2023-2024 Regime Shift:** China officially terminated its decade-long national NEV purchase subsidy at the end of 2022/2023. 2024 is defined by a brutal, margin-crushing domestic price war (e.g., BYD launching the Seagull under $10,000). Facing up to 38% anti-subsidy tariffs from the EU in 2024, Chinese OEMs are furiously pivoting export capacity to the Global South.",
-            f"**Strategic ROI ({custom_roi:.1f}):** China acts as a 'Maintenance Market'. The AI correctly identifies that Chinese EV adoption is structurally permanent (highly resilient). However, extreme over-saturation of existing charging infrastructure in Tier-1 and Tier-2 cities drastically dilutes the expected profit-margin per newly deployed charging plug."
+            "🏭 Post-Subsidy Hyper-Competition",
+            "**2023-2024 Regime Shift:** China terminated its national NEV purchase subsidy in 2023. 2024 is defined by a brutal, margin-crushing domestic price war. Facing up to 38% anti-subsidy tariffs from the EU in 2024, Chinese OEMs are furiously pivoting export capacity to the Global South.",
+            f"**Strategic ROI ({custom_roi:.1f}):** China acts as a 'Maintenance Market'. EV adoption is structurally permanent, but extreme over-saturation of existing charging infrastructure in Tier-1 cities drastically dilutes the expected profit-margin per newly deployed plug."
         ),
         "Mexico": (
             "📈 USMCA Nearshoring & Fleet Mandates",
-            "**2023-2024 Regime Shift:** Mexico is the primary beneficiary of geopolitical fracturing. To bypass US tariffs via USMCA 'Rules of Origin', Chinese OEMs (like BYD) spent 2024 aggressively scouting Mexican factory sites. Domestically, growth is surging not from consumer subsidies, but from heavy commercial fleet electrification (e.g., DHL, Walmart Mexico) fulfilling cross-border ESG mandates.",
-            f"**Strategic ROI ({custom_roi:.1f}):** Mexico is a highly-rated 'Dark Horse'. The ROI is exceptionally strong because growth is driven by **Industrial Necessity**, not fickle consumer politics. Combined with 98% untapped 'Market Room', this represents one of the highest-alpha deployment targets in the portfolio."
+            "**2023-2024 Regime Shift:** Mexico is the primary beneficiary of geopolitical fracturing. To bypass US tariffs via USMCA 'Rules of Origin', OEMs spent 2024 aggressively scouting Mexican factory sites. Domestically, growth is surging from heavy commercial fleet electrification fulfilling cross-border ESG mandates.",
+            f"**Strategic ROI ({custom_roi:.1f}):** Mexico is a highly-rated 'Dark Horse'. The ROI is exceptionally strong because growth is driven by **Industrial Necessity**, not fickle consumer politics. Combined with massive untapped 'Market Room', this is a prime target."
         ),
         "UK": (
-            "⚖️ The ZEV Mandate vs. Political Delays",
-            "**2023-2024 Regime Shift:** The UK experienced conflicting market signals. While the strict ZEV Mandate took effect in Jan 2024 (requiring OEMs to hit 22% zero-emission sales or face massive fines), the Prime Minister simultaneously pushed the 2030 ICE ban back to 2035. This created severe consumer confusion and stalled private charging investments.",
-            f"**Strategic ROI ({custom_roi:.1f}):** The AI model flags the UK with moderate resilience. The ZEV mandate forces OEM compliance, preventing a total collapse, but the political delay of the ICE ban reduces the immediate urgency for rapid, nationwide infrastructure expansion."
+            "⚖️ ZEV Mandates vs. ICE Ban Delays",
+            "**2023-2024 Regime Shift:** In 2024, the UK implemented a strict ZEV Mandate requiring automakers to hit 22% EV sales or face fines. However, the political delay of the 2030 ICE ban to 2035 created consumer confusion, stalling the private charging investment momentum seen in 2022.",
+            f"**Strategic ROI ({custom_roi:.1f}):** Moderate ROI. The mandate forces OEM compliance (maintaining base growth), but the political delay reduces the immediate urgency for rapid, nationwide infrastructure deployment."
         ),
         "India": (
             "🌱 Local Manufacturing Subsidy Overhauls",
-            "**2023-2024 Regime Shift:** The flagship FAME-II subsidy ended in March 2024 and was replaced by the leaner EMPS 2024 scheme. Crucially, in 2024, India slashed EV import taxes (from up to 100% down to 15%) for global automakers *only if* they commit to investing at least $500M in local manufacturing. This sparked a race to build localized supply chains.",
-            f"**Strategic ROI ({custom_roi:.1f}):** India possesses astronomical 'Market Room'. The AI views the transition from consumer-handouts to manufacturing-incentives as a positive long-term resilience indicator. However, low current GDP/Capita restricts immediate consumer purchasing power, capping the short-term infrastructure ROI."
+            "**2023-2024 Regime Shift:** The flagship FAME-II subsidy ended in March 2024, replaced by the leaner EMPS scheme. Crucially, India slashed EV import taxes for global automakers *only if* they commit to investing $500M in local manufacturing, sparking a race to build localized supply chains.",
+            f"**Strategic ROI ({custom_roi:.1f}):** India possesses astronomical 'Market Room'. The AI views the transition to manufacturing-incentives as a positive long-term indicator. However, low GDP/Capita restricts immediate consumer purchasing power, capping short-term ROI."
+        ),
+        "France": (
+            "🏛️ Protectionist 'Social Leasing'",
+            "**2023-2024 Regime Shift:** France weaponized its subsidy program in 2024 by introducing an 'environmental score' that effectively blocks Chinese-made EVs from receiving the €4,000 state bonus. Furthermore, their highly successful €100/month 'Social Leasing' program was paused after overwhelming demand.",
+            f"**Strategic ROI ({custom_roi:.1f}):** The AI flags France as resilient due to strong state intervention protecting domestic OEMs. However, ROI is somewhat capped by the heavy reliance on complex state-sponsored leasing programs to drive middle-class adoption."
+        ),
+        "Japan": (
+            "🔋 The Hybrid Fortress",
+            "**2023-2024 Regime Shift:** Japan remains a global outlier, heavily favoring HEVs (Hybrids) and exploring hydrogen. While domestic subsidies for BEVs exist, the dominant *Keiretsu* auto groups (Toyota, Honda) only began a reluctant, delayed pivot to pure BEVs in late 2023/2024.",
+            f"**Strategic ROI ({custom_roi:.1f}):** Low ROI. Despite immense wealth and infrastructure capacity, the domestic market exhibits intense cultural and corporate resistance to pure Battery Electric Vehicles, heavily suppressing 'Market Room' utility."
         )
     }
     
-    default_intel = (
-        "ℹ️ Organic Utility Phase",
-        "**2023-2024 Market Dynamics:** This market is currently experiencing steady S-Curve diffusion driven by organic purchasing power and gradual infrastructure build-out. No major macroeconomic black-swans, tariff disruptions, or subsidy collapses were recorded in the 2024 audit window.",
-        f"**Strategic ROI ({custom_roi:.1f}):** This score is a baseline algorithmic output balancing the country's GDP per capita against its remaining untapped market potential (Market Room) and existing infrastructure density."
-    )
-    
-    return intel.get(country, default_intel)
+    # DYNAMIC FALLBACK: If country is not in the hardcoded list, generate specific insights based on its data.
+    if country not in intel:
+        s_shift = c_data.get('EV_Share_Pct', 0) - c_data.get('EV_Share_Pct_2023', 0)
+        p_shift = c_data.get('Policy_Score', 0) - c_data.get('Policy_Score_2023', 0)
+        
+        trend_word = "expanded" if s_shift >= 0 else "contracted"
+        pol_word = "strengthened" if p_shift >= 0 else "weakened"
+        
+        dyn_headline = f"🔍 Macro-Economic Maturation Phase"
+        dyn_context = f"**2023-2024 Market Dynamics:** {country} {trend_word} its EV market share by {abs(s_shift):.1f}% over the last 12 months. Concurrently, national policy support has {pol_word} (Shift: {p_shift:+.1f}). Our data pipelines indicate that adoption in {country} is closely following organic GDP S-Curve modeling, rather than being driven by sudden, disruptive geopolitical black-swan events."
+        dyn_roi = f"**Strategic ROI ({custom_roi:.1f}):** The AI generated this score by mathematically weighing {country}'s purchasing power (${c_data.get('GDP_per_capita', 0):,.0f}) against its remaining untapped 'Market Room' ({c_data.get('market_room', 0)*100:.1f}%). The model views this region as a stable, secondary deployment target."
+        return (dyn_headline, dyn_context, dyn_roi)
+        
+    return intel[country]
 
 # --- 4. THE FINAL POP-UP REPORT ---
 @st.dialog("📋 OFFICIAL EXECUTIVE AUDIT REPORT", width="large")
@@ -115,7 +132,7 @@ def show_final_report(country, w_safe, w_room, w_wealth):
     c_data = df[df['country'] == country].iloc[0]
     
     custom_roi = ((c_data['Survival_Prob']**w_safe) * (c_data['market_room']**w_room) * (c_data['purchasing_power']**w_wealth)) / (1+c_data['infra_saturation']) * 100
-    headline, context, roi_justification = get_comprehensive_intel(country, custom_roi)
+    headline, context, roi_justification = get_comprehensive_intel(country, c_data, custom_roi)
     
     st.markdown(f"<h2 style='color: #0f766e; margin-bottom: 0;'>Strategic Target: {country}</h2>", unsafe_allow_html=True)
     
@@ -158,17 +175,17 @@ st.markdown("<h2 style='color: #0f766e; margin-bottom: 5px;'>GlobalCharge Intell
 col_map, col_panel = st.columns([7.5, 2.5], gap="medium")
 
 with col_map:
-    # Set to 'natural earth' and adjust margins/lataxis to show the whole world properly
+    # Use equirectangular to flatten the map so the whole globe is visible without cutoff
     fig = px.choropleth(
         df, locations=df.get("iso_alpha", df["country"]), color="Base_ROI", 
         hover_name="country", color_continuous_scale="Teal", 
-        projection="natural earth"
+        projection="equirectangular"
     )
+    # Tightly pack the map, remove all frames and borders
     fig.update_layout(
         margin={"r":0,"t":0,"l":0,"b":0}, height=550,
         coloraxis_showscale=False, 
-        geo=dict(bgcolor='rgba(0,0,0,0)', showcoastlines=False, showframe=False, 
-                 lataxis_range=[-55, 90], lonaxis_range=[-180, 180]) # Forces entire map into view
+        geo=dict(bgcolor='rgba(0,0,0,0)', showcoastlines=False, showframe=False)
     )
     map_click = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
