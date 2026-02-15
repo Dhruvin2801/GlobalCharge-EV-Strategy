@@ -31,95 +31,101 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DATA LOADER ---
+# --- 2. SELF-HEALING DATA LOADER ---
 @st.cache_data
 def load_data():
     file = 'war_room_audit_2025.csv'
     if os.path.exists(file):
         df = pd.read_csv(file)
-        if 'Country' in df.columns: df['country'] = df['Country']
-        # Map intelligence columns
-        df['Survival_Prob'] = df.get('New_Prob_Pct', 80) / 100
-        df['Base_Prob_Pct'] = df.get('Base_Prob_Pct', df.get('New_Prob_Pct', 80) - 5)
+        
+        # SELF-HEALING: Map all possible variations to the app's internal names
+        column_map = {
+            'Country': 'country',
+            'New_Prob_Pct': 'new_prob',
+            'Base_Prob_Pct': 'base_prob',
+            'ROI_Score': 'roi_score',
+            'Opportunity_Gap': 'opp_gap',
+            'lagged_share': 'share',
+            'Market_Room': 'room',
+            'Purchasing_Power': 'wealth'
+        }
+        
+        for old_name, new_name in column_map.items():
+            if old_name in df.columns:
+                df[new_name] = df[old_name]
+            elif new_name not in df.columns:
+                # Create fallback defaults if column is missing
+                df[new_name] = 0.0 if 'gap' in new_name else 50.0
+        
         return df
     return None
 
 df = load_data()
 if df is None:
-    st.error("Audit Data missing. Ensure 'war_room_audit_2025.csv' is in your GitHub folder.")
+    st.error("⚠️ DATA FILE NOT FOUND: Ensure 'war_room_audit_2025.csv' is in your GitHub folder.")
     st.stop()
 
-# --- 3. GEOPOLITICAL INTELLIGENCE REPOSITORY (30+ COUNTRIES) ---
+# --- 3. GEOPOLITICAL INTELLIGENCE ENGINE ---
 def get_comprehensive_intel(country, c_data, custom_roi):
     intel_repo = {
         "France": (
             "⚖️ The 'Eco-Score' Pivot & Tariff Shielding",
-            "**2023-24 Regime Shift:** In 2024, France revamped its 'Bonus Écologique' by introducing an environmental footprint score. This effectively excluded Chinese-made EVs (due to shipping/coal-power emissions) while protecting domestic Renault/Stellantis production. This redirected the market toward European-made supply chains.",
-            f"**Strategic Verdict (ROI {custom_roi:.1f}):** France represents a matured yet protected market. The AI identifies high resilience because the new 'Eco-Score' creates a structural moat for local manufacturers, reducing the risk of a sudden flood of cheap imports destabilizing infrastructure ROI."
+            "**2023-24 Regime Shift:** France revamped its 'Bonus Écologique' in 2024 to reward environmental footprint scores. This effectively shields domestic OEMs from low-cost imports while maintaining steady organic demand via localized Renault/Stellantis supply.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** France represents a matured yet protected market. The AI identifies resilience because the new 'Eco-Score' creates a structural moat for local manufacturers."
         ),
         "Australia": (
             "🛡️ NVES Mandates & Fleet Transition Alpha",
-            "**2023-24 Regime Shift:** Australia passed the New Vehicle Efficiency Standard (NVES) in 2024, shifting adoption from 'voluntary' to 'regulatory mandate'. The removal of the Fringe Benefits Tax (FBT) on EVs has made the corporate fleet market a primary engine for resilient growth.",
-            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Classified as a **Core Resilience Play**. The 12% adoption rate indicates a perfect 'Takeoff' stage. High confidence is grounded in the structural tax advantages that make EV ownership cheaper than internal combustion equivalents."
+            "**2023-24 Regime Shift:** The 2024 New Vehicle Efficiency Standard (NVES) shifted adoption from voluntary to regulatory mandate. The removal of Fringe Benefits Tax (FBT) on EVs makes the corporate market a resilient growth engine.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Australia is a high-alpha takeoff target. High structural confidence is grounded in tax advantages that make EV ownership cheaper than ICE equivalents."
         ),
         "India": (
             "🐘 The EMPS Pivot & The 0.88 Opportunity Gap",
-            "**2023-24 Regime Shift:** The transition from FAME-II to the EMPS 2024 scheme caused a temporary growth plateau. However, the new 15% import tax threshold for localized manufacturing has sparked a global race to build supply chains in the Global South.",
-            f"**Strategic Verdict (ROI {custom_roi:.1f}):** India is the ultimate 'Sleeping Giant'. The Opportunity Gap proves that underlying demand is surging. This is a primary target for $100M capital seeking a 2026 recovery exit."
-        ),
-        "Germany": (
-            "⚠️ The 'Subsidy Cliff' & Constitutional Black-Swan",
-            "**2023-24 Regime Shift:** In Dec 2023, a sudden court ruling cancelled €60B in funding, forcing the death of EV subsidies. This proved that Germany's 2023 success was a state-sponsored bubble, not an organic market shift.",
-            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Market is currently 'Policy-Brittle'. Auditor discretion is advised until H2 2025 energy prices stabilize. The AI maintains a high structural score, but geopolitical volatility remains high."
+            "**2023-24 Regime Shift:** India's transition to the EMPS scheme in 2024 caused a plateau, but slashed import taxes for manufacturers committing $500M+ local investment has sparked a localized supply chain race.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** The 'Sleeping Giant'. The Opportunity Gap proves that underlying demand is surging. This is a primary target for capital seeking a 2026 recovery."
         )
     }
-
+    
     if country in intel_repo:
         return intel_repo[country]
-    else:
-        gap = c_data.get('Opportunity_Gap', 0.5)
-        headline = f"🔍 Structural Resilience Audit: {country}"
-        context = f"**2023-2024 Market Dynamics:** {country} is currently benefiting from the 'Global South Supply Pivot' as Chinese OEMs redirect inventory away from high-tariff zones (EU/US). Adoption follows an organic S-Curve driven by increasing GDP/Capita rather than volatile state aid."
-        verdict = f"**Strategic ROI ({custom_roi:.1f}):** The AI weighed structural purchasing power against plug density. With an Opportunity Gap of {gap:.2f}, {country} is classified as a stable secondary deployment target."
-        return (headline, context, verdict)
+    
+    gap = c_data.get('opp_gap', 0.5)
+    headline = f"🔍 Structural Resilience Audit: {country}"
+    context = f"**2023-2024 Market Dynamics:** {country} is benefiting from the 'Global South Supply Pivot' as supply redirects from high-tariff zones. Adoption follows an organic S-Curve driven by increasing GDP."
+    verdict = f"**Strategic ROI ({custom_roi:.1f}):** The AI weighed structural power against density. With an Opportunity Gap of {gap:.2f}, {country} is a stable deployment target."
+    return (headline, context, verdict)
 
-# --- 4. EXECUTIVE AUDIT REPORT (IMAGE-ACCURATE UI) ---
+# --- 4. EXECUTIVE AUDIT REPORT (POPOUT) ---
 @st.dialog("📋 OFFICIAL EXECUTIVE AUDIT REPORT", width="large")
 def show_final_report(country, w_safe, w_room, w_wealth):
     c_data = df[df['country'] == country].iloc[0]
     
-    # Calculate custom ROI
-    survival_prob = c_data.get('Survival_Prob', 0.8)
-    m_room = c_data.get('Market_Room', 0.5)
-    p_power = c_data.get('Purchasing_Power', 5)
-    custom_roi = ((survival_prob**w_safe) * (m_room**w_room) * (p_power**w_wealth)) / (1+0.5) * 100
+    # Logic for Classification boxes
+    share = c_data.get('share', 15)
+    prob = c_data.get('new_prob', 80)
     
+    # Custom ROI calc
+    custom_roi = (((prob/100)**w_safe) * (c_data.get('room', 0.5)**w_room) * (c_data.get('wealth', 5)**w_wealth)) / (1+0.5) * 100
     headline, context, verdict = get_comprehensive_intel(country, c_data, custom_roi)
     
     st.markdown(f"<h2 style='color: #0f766e; margin-bottom: 0;'>Strategic Target: {country}</h2>", unsafe_allow_html=True)
     
-    # Section 1: Classifications
     st.markdown("### 1. Market Classifications")
     c1, c2 = st.columns(2)
     with c1:
-        share = c_data.get('lagged_share', 15)
         status = "🚀 Takeoff Phase" if share < 20 else "📉 Mature / Saturated"
         st.info(f"**Classification 1: Market Stage**\n\n**{status}**\n\n*Justification:* Market exhibits {share:.1f}% adoption. Capital deployment into markets under 20% yields highest exponential returns.")
     with c2:
-        resilience = "✅ Highly Resilient" if c_data['New_Prob_Pct'] >= 78 else "⚠️ Policy Vulnerable"
+        resilience = "✅ Highly Resilient" if prob >= 78 else "⚠️ Policy Vulnerable"
         st.warning(f"**Classification 2: AI Risk Profile**\n\n**{resilience}**\n\n*Justification:* Model predicts a high structural probability of sustained expansion in the 2024 'Chaos Regime' shift.")
 
     st.markdown("---")
     
-    # Section 2: Metrics
     st.markdown("### 2. Regime Shift Analytics (2023 ➔ 2024)")
     m1, m2, m3 = st.columns(3)
-    
-    m1.metric("Current AI Confidence", f"{c_data['New_Prob_Pct']:.1f}%", f"{c_data['New_Prob_Pct'] - c_data['Base_Prob_Pct']:+.1f}% vs Baseline")
-    m2.metric("Opportunity Gap", f"{c_data.get('Opportunity_Gap', 0):.2f}", "Alpha Index")
+    m1.metric("Current AI Confidence", f"{prob:.1f}%", f"{prob - c_data.get('base_prob', 75):+.1f}% vs Baseline")
+    m2.metric("Opportunity Gap", f"{c_data.get('opp_gap', 0):.2f}", "Alpha Index")
     m3.metric("ROI Potential Index", f"{custom_roi:.1f}", "Scaled Score")
 
-    # Section 3: Geopolitical Box
     st.markdown(f"""
     <div class='intel-box'>
         <h4 style='color: #0f766e; margin-top: 0;'>📰 Geopolitical & Policy Context: {headline}</h4>
@@ -136,11 +142,7 @@ st.markdown("<h2 style='color: #0f766e; margin-bottom: 5px;'>GlobalCharge Intell
 col_map, col_panel = st.columns([7.5, 2.5], gap="medium")
 
 with col_map:
-    fig = px.choropleth(
-        df, locations=df["country"], locationmode='country names', 
-        color="ROI_Score", hover_name="country", color_continuous_scale="Teal", 
-        projection="natural earth"
-    )
+    fig = px.choropleth(df, locations="country", locationmode='country names', color="roi_score", color_continuous_scale="Teal", projection="natural earth")
     fig.update_geos(showland=True, landcolor="#f1f5f9", oceancolor="#ffffff", showframe=False)
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=550, coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)')
     map_click = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
@@ -153,20 +155,24 @@ with col_panel:
     if selected_country:
         c_data = df[df['country'] == selected_country].iloc[0]
         st.markdown(f"<h3 style='margin-top: 0; color: #1e293b;'>🎯 Target: {selected_country}</h3>", unsafe_allow_html=True)
-        
-        st.metric("ROI Score", f"{c_data.get('ROI_Score', 0):.1f}")
-        st.metric("AI Confidence", f"{c_data.get('New_Prob_Pct', 0):.1f}%")
+        st.metric("ROI Score", f"{c_data.get('roi_score', 0):.1f}")
+        st.metric("AI Confidence", f"{c_data.get('new_prob', 0):.1f}%")
         
         st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
         st.markdown("**⚙️ Configuration Mandate**")
-        w_safe = st.slider("🛡️ Resilience Weight", 0.0, 2.0, 1.0, step=0.1)
-        w_room = st.slider("📈 Market Room Weight", 0.0, 2.0, 1.0, step=0.1)
-        w_wealth = st.slider("💰 Wealth Weight", 0.0, 2.0, 1.0, step=0.1)
+        w_s = st.slider("🛡️ Resilience", 0.0, 2.0, 1.0, step=0.1)
+        w_r = st.slider("📈 Market Room", 0.0, 2.0, 1.0, step=0.1)
+        w_w = st.slider("💰 Wealth", 0.0, 2.0, 1.0, step=0.1)
         
         if st.button("GENERATE EXECUTIVE AUDIT"):
-            show_final_report(selected_country, w_safe, w_room, w_wealth)
+            show_final_report(selected_country, w_s, w_r, w_w)
     else:
         st.markdown("<h3 style='margin-top: 0; color: #1e293b;'>🌍 Portfolio Audit</h3>")
-        st.metric("Capital Mandate", "$100M")
-        st.metric("Audit Status", "Regime-Aware")
-        st.info("Select a country on the map to run the audit.")
+        st.metric("Capital Allocation", "$100M")
+        
+        st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
+        st.markdown("**🏆 Top ROI Targets**")
+        top_3 = df.nlargest(3, 'roi_score')[['country', 'roi_score']]
+        st.dataframe(top_3.rename(columns={'country': 'Market', 'roi_score': 'Score'}), hide_index=True, use_container_width=True)
+
+        st.info("👆 **Select a market on the map** to run the audit.")
