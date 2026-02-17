@@ -3,52 +3,58 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# --- 1. CONFIG & NO-SCROLL THEME ---
-st.set_page_config(page_title="GlobalCharge Intelligence", layout="wide", initial_sidebar_state="collapsed")
+# --- 1. CONFIG & "INSTITUTIONAL QUANT" THEME ---
+st.set_page_config(page_title="GlobalCharge | Quant Engine", layout="wide", initial_sidebar_state="collapsed")
 
+# Custom CSS injecting the Dark Mode, +2pt Font Sizing, and Red/Orange Palette
 st.markdown("""
     <style>
-    /* Force True Black and lock scrolling */
-    .stApp { background-color: #050505; color: #E2E8F0; font-family: 'Inter', monospace; overflow-y: hidden; }
+    /* Dark Mode Architecture */
+    .stApp { background-color: #0b0f19; color: #f8fafc; font-family: 'Inter', sans-serif; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
+    .block-container { padding-top: 1rem; padding-bottom: 0rem; max-width: 98%; }
     
-    /* Squash all padding to fit on one screen */
-    .block-container { padding-top: 0.5rem !important; padding-bottom: 0rem !important; padding-left: 2rem !important; padding-right: 2rem !important; max-width: 100%; }
-    
-    /* Compact Text Headers */
-    h1, h2, h3 { margin-top: 0rem !important; margin-bottom: 0.2rem !important; padding-top: 0rem !important; }
-    p { margin-bottom: 0.5rem !important; }
-    hr { margin: 0.5rem 0 !important; border-color: #222 !important; }
-    
-    /* Neon Metrics */
-    [data-testid="stMetricValue"] { font-size: 1.6rem !important; color: #00FF41; font-weight: 800; text-shadow: 0 0 8px rgba(0,255,65,0.4); line-height: 1.2; }
-    [data-testid="stMetricLabel"] { font-size: 0.8rem !important; color: #94A3B8; font-weight: 700; text-transform: uppercase; margin-bottom: -5px;}
-    
-    /* Compact Button */
-    .stButton>button { 
-        background-color: transparent; color: #00FF41; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-        border-radius: 4px; height: 3rem; width: 100%; border: 2px solid #00FF41; 
-        box-shadow: 0 0 10px rgba(0, 255, 65, 0.2); transition: all 0.3s ease; margin-top: 5px;
+    /* Institutional Pitch Styling */
+    .quant-pitch {
+        border-left: 4px solid #ef4444; padding-left: 15px; margin-bottom: 25px;
+        color: #94a3b8; font-size: 1.1rem; font-style: italic;
     }
-    .stButton>button:hover { background-color: rgba(0, 255, 65, 0.1); color: #FFFFFF; }
+    .quant-pitch strong { color: #f8fafc; }
     
-    /* Sliders Compact */
-    .stSlider { padding-bottom: 0px !important; margin-bottom: -20px !important; }
+    /* Premium Metric Styling (Font Size +2pt applied to the 1.8rem base) */
+    [data-testid="stMetricValue"] { font-size: calc(1.8rem + 2pt) !important; color: #ef4444; font-weight: 800; letter-spacing: -0.05rem; }
+    [data-testid="stMetricLabel"] { font-size: 0.9rem !important; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+    [data-testid="stMetricDelta"] { font-size: 1rem !important; }
     
-    /* Audit Dialog Box */
-    .intel-box { background: linear-gradient(180deg, #111 0%, #050505 100%); border: 1px solid #222; border-top: 2px solid #00FF41; padding: 20px; border-radius: 6px; margin-top: 15px; }
-    .intel-box h4 { color: #00FF41; font-weight: bold; margin-bottom: 8px; font-size: 1rem; }
+    /* Audit Button Styling (Target Red) */
+    .stButton>button { 
+        background-color: #ef4444; color: white; font-weight: 800; text-transform: uppercase;
+        border-radius: 4px; height: 3.5rem; width: 100%; border: none; 
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); transition: all 0.3s ease; margin-top: 15px;
+    }
+    .stButton>button:hover { background-color: #dc2626; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4); color: white;}
+    
+    /* Intel Box Styling (Dark Mode) */
+    .intel-box { background-color: #1e293b; padding: 28px; border-left: 6px solid #ef4444; border-radius: 8px; margin-top: 20px; line-height: 1.8; }
+    .intel-box h4 { color: #ef4444; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; font-size: 1.1rem; }
+    .intel-box p { color: #cbd5e1; font-size: 1.05rem; }
+    
+    /* Warnings / Regime Alerts (Orange) */
+    .stAlert { background-color: rgba(249, 115, 22, 0.1) !important; color: #f8fafc !important; border: 1px solid #f97316 !important; }
+    
+    /* Slider Clean-up */
+    .stSlider { padding-bottom: 0px; margin-bottom: -10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DATA LOADER ---
+# --- 2. ROBUST DATA LOADER ---
 @st.cache_data
 def load_data():
     file = 'war_room_audit_2025.csv'
     if os.path.exists(file):
         df = pd.read_csv(file)
-        df.columns = [c.lower() for c in df.columns]
+        df.columns = [c.lower() for c in df.columns] 
         if 'country' not in df.columns:
             for c in df.columns:
                 if 'name' in c or 'nation' in c: df.rename(columns={c: 'country'}, inplace=True)
@@ -60,75 +66,116 @@ if df is None:
     st.error("🚨 CRITICAL ERROR: 'war_room_audit_2025.csv' missing from repository.")
     st.stop()
 
-# --- 3. GEOPOLITICAL INTELLIGENCE ---
+# --- 3. THE DEEP INTELLIGENCE REPOSITORY ---
 def get_detailed_intel(country, c_data, custom_roi):
     repo = {
-        "Belgium": ("⚖️ The Company Car Mandate", "Belgium's market is uniquely shielded by its corporate tax structure. In 2024, only zero-emission company vehicles qualify for 100% tax deductibility.", f"**Verdict (ROI {custom_roi:.1f}):** Defensive Safe Haven. Structural tax mandates make corporate fleet turnover mandatory."),
-        "Australia": ("🛡️ NVES Policy Shield & FBT", "Australia avoided the 2024 European crash via the New Vehicle Efficiency Standard (NVES). Combined with FBT exemptions, ROI for commercial charging has surged.", f"**Verdict (ROI {custom_roi:.1f}):** #1 Core Growth Target. Structural tax advantage makes EV ownership cheaper than ICE."),
-        "India": ("🐘 The EMPS Pivot", "India's 2024 manufacturing incentive (PLI) forced global giants into localized production talks. The AI identifies this as a 'Strategic Buy on the Dip'.", f"**Verdict (ROI {custom_roi:.1f}):** The 'Sleeping Giant' (Opp Gap 0.88). Primary Emerging Alpha play for 2026 breakout."),
-        "France": ("🇫🇷 The 'Eco-Score' Moat", "France redefined subsidies to exclude carbon-intensive shipping, subsidizing European-made EVs while taxing Asian imports.", f"**Verdict (ROI {custom_roi:.1f}):** Protected Mature market. Highly resilient to the 2024 Chaos Regime."),
-        "Germany": ("⚠️ The 'Umweltbonus' Shock", "The Dec 2023 constitutional court ruling ended all EV subsidies. Sales collapsed 35% in early 2024 as the market entered a 'Mean Reversion' phase.", f"**Verdict (ROI {custom_roi:.1f}):** HIGH VOLATILITY. Human veto recommended until H2 2025.")
+        "Belgium": (
+            "⚖️ Fiscal Dominance & The Company Car Mandate",
+            "**2023-2024 Regime Shift:** Belgium's market is uniquely shielded by its 'Company Car' tax structure. In 2024, the government mandated that only zero-emission company vehicles qualify for 100% tax deductibility. This created an artificial but highly resilient 'floor' for adoption, completely bypassing the consumer interest rate anxieties seen in Germany.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Belgium is a 'Defensive Safe Haven'. While adoption is high (41%), the structural tax mandate makes it one of the most stable regions for long-term infrastructure ROI."
+        ),
+        "Australia": (
+            "🛡️ NVES Policy Shield & The FBT Exemption",
+            "**2023-2024 Regime Shift:** Australia successfully avoided the 2024 European crash by implementing the New Vehicle Efficiency Standard (NVES). Combined with the ongoing Fringe Benefits Tax (FBT) exemption, the ROI for commercial and private charging has surged, making Australia the primary 'Takeoff' market of the year.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Australia remains our #1 Core Growth Target. The 12% share provides exponential room for growth, and the structural tax advantage makes EV ownership cheaper than ICE."
+        ),
+        "India": (
+            "🐘 The EMPS Pivot & The 0.88 Opportunity Alpha",
+            "**2023-2024 Regime Shift:** India's pivot from FAME-II to the EMPS scheme caused a temporary supply-side plateau. However, the 2024 manufacturing incentive (PLI) has forced global giants into localized production talks. The AI identifies this as a 'Strategic Buy on the Dip'.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** India holds the largest 'Opportunity Gap' in the fund. Deployment here targets the 2026-2028 S-Curve breakout. It is the portfolio's primary Emerging Alpha play."
+        ),
+        "France": (
+            "🇫🇷 The 'Eco-Score' Moat & Sovereign Protection",
+            "**2023-2024 Regime Shift:** France's 2024 'Eco-Score' redefined subsidies to exclude carbon-intensive shipping. This sovereign protectionism has stabilized domestic ROI against global price volatility.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** A 'Protected Mature' market. France is highly resilient to the 2024 Chaos Regime because its policy actively shields domestic margins."
+        ),
+        "Germany": (
+            "⚠️ The 'Umweltbonus' Shock & Subsidy Cliff",
+            "**2023-2024 Regime Shift:** The Dec 2023 constitutional court ruling forced an immediate end to all EV subsidies. This 'Policy Heart Attack' proved that German adoption was an artificial bubble. Sales collapsed 35% in early 2024 as the market entered a 'Mean Reversion' phase.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** HIGH VOLATILITY. We recommend a human veto until H2 2025. The AI identifies high structural wealth, but the current political regime shift makes capital deployment risky."
+        )
     }
     
     res = repo.get(country)
     if res: return res
-    return (f"🔍 Resilience Audit: {country}", f"{country} is shielded from European political volatility by organic wealth growth.", f"**Verdict (ROI {custom_roi:.1f}):** Stable target with an Opportunity Gap of {c_data.get('opportunity_gap', 0.5):.2f}.")
+    
+    gap = c_data.get('opportunity_gap', 0.5)
+    return (f"🔍 Structural Resilience Audit: {country}", 
+            f"**2023-24 Dynamics:** {country} is following a classic GDP-driven S-Curve. Adoption is shielded from the European political volatility by organic wealth growth and the redirection of global supply chains.",
+            f"**Strategic Verdict (ROI {custom_roi:.1f}):** Stable deployment target with an Opportunity Gap of {gap:.2f}. Growth is driven by long-term infrastructure expansion.")
 
-# --- 4. EXECUTIVE AUDIT DIALOG ---
-@st.dialog("SYSTEM OVERRIDE: EXECUTIVE AUDIT REPORT", width="large")
+# --- 4. THE EXECUTIVE AUDIT DIALOG ---
+@st.dialog("📋 OFFICIAL EXECUTIVE AUDIT REPORT", width="large")
 def show_final_report(country, w_s, w_r, w_w):
     c_data = df[df['country'] == country].iloc[0]
     prob = c_data.get('new_prob_pct', 80) / 100
     room = c_data.get('market_room', 0.5)
     wealth = c_data.get('purchasing_power', 5)
     custom_roi = ((prob**w_s) * (room**w_r) * (wealth**w_w)) / (1.5) * 100
+    
     headline, context, verdict = get_detailed_intel(country, c_data, custom_roi)
     
-    st.markdown(f"<h2 style='color: #00FF41; margin-bottom: 5px; text-transform: uppercase;'>Target: {country}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color: #ef4444; margin-bottom: 5px;'>Strategic Audit: {country}</h2>", unsafe_allow_html=True)
+    
+    # SECTION 1: Classifications (Utilizing Orange for Warnings)
+    st.markdown("### 1. Market Classifications")
     c1, c2 = st.columns(2)
     with c1:
         share = c_data.get('lagged_share', 15)
-        st.info(f"**Stage:** {'🚀 Takeoff Phase' if share < 20 else '📉 Mature'}\n\n*Current Adoption: {share:.1f}%*")
+        status = "🚀 Takeoff Phase" if share < 20 else "📉 Mature / Saturated"
+        st.info(f"**Classification 1: Market Stage**\n\n**{status}**\n\n*Justification:* Market exhibits {share:.1f}% adoption. Deployment into markets under 20% yields highest exponential returns.")
     with c2:
-        st.warning(f"**AI Risk Profile:** {'✅ Highly Resilient' if c_data.get('new_prob_pct', 0) >= 78 else '⚠️ Policy Vulnerable'}\n\n*2024 Chaos Regime Test*")
+        resilience = "✅ Highly Resilient" if c_data.get('new_prob_pct', 0) >= 78 else "⚠️ Policy Vulnerable"
+        st.warning(f"**Classification 2: AI Risk Profile**\n\n**{resilience}**\n\n*Justification:* Model flags structural regime shifts. Use orange warning protocols if vulnerable.")
 
+    st.markdown("---")
+    
+    # SECTION 2: Analytics
+    st.markdown("### 2. Regime Shift Analytics (2023 ➔ 2024)")
     m1, m2, m3 = st.columns(3)
     curr_p = c_data.get('new_prob_pct', 0)
-    m1.metric("AI Confidence", f"{curr_p:.1f}%", f"{curr_p - c_data.get('base_prob_pct', 75):+.1f}% vs Base")
-    m2.metric("Opportunity Gap", f"{c_data.get('opportunity_gap', 0):.2f}")
-    m3.metric("ROI Potential Index", f"{custom_roi:.1f}")
+    base_p = c_data.get('base_prob_pct', 75)
+    m1.metric("AI Confidence", f"{curr_p:.1f}%", f"{curr_p - base_p:+.1f}% vs Baseline")
+    m2.metric("Opportunity Gap", f"{c_data.get('opportunity_gap', 0):.2f}", "Alpha Index")
+    m3.metric("ROI Potential Index", f"{custom_roi:.1f}", "Scaled Score")
 
-    st.markdown(f"<div class='intel-box'><h4>📰 {headline}</h4><p>{context}</p><hr style='border: 1px solid #333; margin: 10px 0;'><h4>💰 Verdict</h4><p>{verdict}</p></div>", unsafe_allow_html=True)
+    # SECTION 3: Deep Intel Box
+    st.markdown(f"""
+    <div class='intel-box'>
+        <h4>📰 Geopolitical Context: {headline}</h4>
+        <p>{context}</p>
+        <hr style='border: 1px solid #334155; margin: 20px 0;'>
+        <h4>💰 ROI Justification & Verdict</h4>
+        <p>{verdict}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- 5. MAIN INTERFACE ---
-st.markdown("<h2 style='color: #00FF41; text-shadow: 0 0 10px rgba(0,255,65,0.4); margin-bottom: 0;'>GlobalCharge Intelligence Engine</h2>", unsafe_allow_html=True)
-st.markdown("<p style='color: #64748b; font-size: 0.85rem; letter-spacing: 1px;'>SYSTEM.STATUS: ONLINE // REGIME-AWARE AUDIT</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='color: #ef4444; margin-bottom: 0px;'>GlobalCharge Intelligence Engine</h1>", unsafe_allow_html=True)
 
-# Adjusted column width to balance the screen better and remove dead space
-col_map, col_panel = st.columns([6.5, 3.5], gap="large")
+# Integrated Pitch Identity
+st.markdown("""
+<div class='quant-pitch'>
+    We are a data-driven investment firm deploying proprietary capital into global EV markets. <br>
+    Our competitive advantage is a <strong>regime-aware machine learning system</strong> that prioritizes downside protection—telling us exactly where not to invest during sudden policy shocks.
+</div>
+""", unsafe_allow_html=True)
+
+col_map, col_panel = st.columns([7.2, 2.8], gap="medium")
 
 with col_map:
-    fig = px.choropleth(df, locations="country", locationmode='country names', color="roi_score", color_continuous_scale=[(0, "#050505"), (1, "#00FF41")])
-    
-    # --- CRITICAL FIX: Crop the map & force transparent background ---
-    fig.update_geos(
-        showland=True, landcolor="#111111", oceancolor="#050505", 
-        showframe=False, coastlinecolor="#222222",
-        projection_type="natural earth",
-        lataxis_range=[-55, 75], # Crops out Antarctica and Extreme North to save vertical space
-        bgcolor='rgba(0,0,0,0)'
-    )
-    
+    # Plotly Map upgraded with Red target signals and +2pt font sizing
+    fig = px.choropleth(df, locations="country", locationmode='country names', color="roi_score", color_continuous_scale="Reds")
+    fig.update_geos(showland=True, landcolor="#1e293b", oceancolor="#0b0f19", showframe=False, lakecolor="#0b0f19")
     fig.update_layout(
         margin={"r":0,"t":0,"l":0,"b":0}, 
-        height=480, # Shorter height guarantees no scrolling
-        coloraxis_showscale=False, 
-        paper_bgcolor='rgba(0,0,0,0)', 
-        plot_bgcolor='rgba(0,0,0,0)'
+        height=550, 
+        coloraxis_showscale=False,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#f8fafc", size=14) # +2pt applied to Plotly Typography
     )
-    
-    # theme=None forces Plotly to respect our dark colors instead of Streamlit's light mode defaults
-    map_click = st.plotly_chart(fig, use_container_width=True, on_select="rerun", theme=None)
+    map_click = st.plotly_chart(fig, use_container_width=True, on_select="rerun")
 
 with col_panel:
     selected_country = None
@@ -136,33 +183,26 @@ with col_panel:
         pt = map_click["selection"]["points"][0]
         selected_country = pt.get("location") or pt.get("hovertext")
     
-    manual_sel = st.selectbox("QUERY.DATABASE:", ["SELECT_TARGET..."] + sorted(df['country'].unique().tolist()))
+    st.markdown("<hr style='margin: 0; border-color: #334155;'>", unsafe_allow_html=True)
+    manual_sel = st.selectbox("Select Target Market:", ["Click Map..."] + sorted(df['country'].unique().tolist()))
     if not selected_country or selected_country not in df['country'].values:
-        selected_country = manual_sel if manual_sel != "SELECT_TARGET..." else None
+        selected_country = manual_sel if manual_sel != "Click Map..." else None
 
     if selected_country and selected_country in df['country'].values:
         c_data = df[df['country'] == selected_country].iloc[0]
-        st.markdown(f"<h3 style='color: #FFF;'>TARGET: {selected_country.upper()}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='margin-top: 10px; color: #f8fafc;'>🎯 Target: {selected_country}</h3>", unsafe_allow_html=True)
+        st.metric("ROI Score", f"{c_data.get('roi_score', 0):.1f}")
+        st.metric("AI Confidence", f"{c_data.get('new_prob_pct', 0):.1f}%")
         
-        m1, m2 = st.columns(2)
-        m1.metric("ROI Score", f"{c_data.get('roi_score', 0):.1f}")
-        m2.metric("AI Confidence", f"{c_data.get('new_prob_pct', 0):.1f}%")
-        
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown("<span style='color: #64748b; font-size: 0.8rem;'>// CONFIGURATION</span>", unsafe_allow_html=True)
-        
+        st.markdown("**⚙️ Risk Configuration Mandate**")
         ws = st.slider("🛡️ Resilience", 0.0, 2.0, 1.0, step=0.1)
         wr = st.slider("📈 Market Room", 0.0, 2.0, 1.0, step=0.1)
         ww = st.slider("💰 Wealth", 0.0, 2.0, 1.0, step=0.1)
         
-        if st.button("EXECUTE AUDIT PROTOCOL"):
+        if st.button("GENERATE EXECUTIVE AUDIT"):
             show_final_report(selected_country, ws, wr, ww)
     else:
-        st.markdown("<h3 style='color: #FFF;'>PORTFOLIO LOG</h3>", unsafe_allow_html=True)
-        
-        m1, m2 = st.columns(2)
-        m1.metric("Mandate", "$100M")
-        m2.metric("Precision", "67.7%")
-        
-        st.markdown("<hr>", unsafe_allow_html=True)
-        st.info("👆 Select a country on the map to run the 78% Margin of Safety audit.")
+        st.markdown("<h3 style='margin-top: 10px; color: #f8fafc;'>🌍 Portfolio Audit</h3>", unsafe_allow_html=True)
+        st.metric("Capital Mandate", "$100M")
+        st.metric("Precision (2024)", "67.7%")
+        st.info("Select a country on the map or use the selector to run the 78% Margin of Safety audit.")
