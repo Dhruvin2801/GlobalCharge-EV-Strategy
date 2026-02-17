@@ -13,7 +13,7 @@ st.markdown("""
     .stApp { background-color: #ffffff; color: #0f172a; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
-    .block-container { padding-top: 1.5rem; padding-bottom: 0rem; max-width: 95%; }
+    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 95%; }
     
     /* Executive Pitch Block */
     .quant-pitch {
@@ -25,11 +25,11 @@ st.markdown("""
     }
     .quant-pitch strong { color: #0f172a; font-weight: 700; }
     
-    /* High-Visibility Metrics (+2pt Scaling Applied) */
+    /* High-Visibility Metrics */
     [data-testid="stMetricValue"] { font-size: calc(2.0rem + 2pt) !important; color: #dc2626; font-weight: 800; }
     [data-testid="stMetricLabel"] { font-size: calc(1.0rem + 2pt) !important; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    /* Executive Action Button (Primary Red) */
+    /* Executive Action Button */
     .stButton>button { 
         background-color: #dc2626; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
         border-radius: 4px; height: 3.5rem; width: 100%; border: none; 
@@ -37,12 +37,12 @@ st.markdown("""
     }
     .stButton>button:hover { background-color: #b91c1c; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3); color: white; }
     
-    /* Intel Box (Crisp separation) */
+    /* Intel Box */
     .intel-box { background-color: #ffffff; padding: 30px; border: 1px solid #e2e8f0; border-top: 5px solid #dc2626; border-radius: 6px; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .intel-box h4 { color: #0f172a; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; font-size: 1.25rem; }
     .intel-box p { color: #334155; font-size: 1.1rem; line-height: 1.7; }
     
-    /* Warning/Regime Alerts (Strict Orange) */
+    /* Warning Alerts */
     .stAlert { background-color: #fff7ed !important; color: #c2410c !important; border: 1px solid #fdba74 !important; }
     
     /* Structural Cleanups */
@@ -69,7 +69,14 @@ if df is None:
     st.error("CRITICAL ERROR: 'war_room_audit_2025.csv' missing from local directory.")
     st.stop()
 
-# --- 3. INTEL REPOSITORY ---
+# --- 3. STATE MANAGEMENT FOR SINGLE PAGE UI ---
+# This ensures the report stays visible after clicking the button, even if you touch a slider
+if 'show_report' not in st.session_state:
+    st.session_state.show_report = False
+if 'last_country' not in st.session_state:
+    st.session_state.last_country = None
+
+# --- 4. INTEL REPOSITORY ---
 def get_detailed_intel(country, c_data, custom_roi):
     repo = {
         "Belgium": ("Fiscal Dominance & Company Car Mandate", "2024 Regime Shift: The market is uniquely shielded by its corporate tax structure. The zero-emission mandate creates an artificial but highly resilient floor, entirely bypassing consumer interest rate shocks.", f"Verdict: Defensive Safe Haven. ROI Potential {custom_roi:.1f}."),
@@ -83,8 +90,8 @@ def get_detailed_intel(country, c_data, custom_roi):
     gap = c_data.get('opportunity_gap', 0.5)
     return (f"Structural Audit: {country}", f"Dynamics: A classic GDP-driven S-Curve shielded from policy volatility by organic wealth scaling and robust infrastructure planning.", f"Verdict: Stable Target. Opportunity Gap {gap:.2f}")
 
-# --- 4. EXECUTIVE MODAL ---
-@st.dialog("STRATEGIC ASSET ALLOCATION REPORT", width="large")
+# --- 5. SINGLE-PAGE EXECUTIVE REPORT BLOCK ---
+# Note: @st.dialog removed. This now prints directly to the main page.
 def show_final_report(country, w_s, w_r, w_w):
     c_data = df[df['country'] == country].iloc[0]
     prob = c_data.get('new_prob_pct', 80) / 100
@@ -93,9 +100,9 @@ def show_final_report(country, w_s, w_r, w_w):
     custom_roi = ((prob**w_s) * (room**w_r) * (wealth**w_w)) / (1.5) * 100
     headline, context, verdict = get_detailed_intel(country, c_data, custom_roi)
     
-    st.markdown(f"<h2 style='color: #0f172a; margin-bottom: 5px; font-weight: 800;'>TARGET MARKET: {country.upper()}</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color: #0f172a; margin-bottom: 5px; font-weight: 800;'>STRATEGIC ASSET ALLOCATION REPORT: {country.upper()}</h2>", unsafe_allow_html=True)
     
-    st.markdown("<h3 style='color: #475569; font-size: 1.1rem;'>1. MARKET CLASSIFICATION</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #475569; font-size: 1.1rem; margin-top: 15px;'>1. MARKET CLASSIFICATION</h3>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         share = c_data.get('lagged_share', 15)
@@ -107,7 +114,7 @@ def show_final_report(country, w_s, w_r, w_w):
         else:
             st.warning("**Risk Profile:** Vulnerable\n\nRegime shift detected. Exercise caution.")
 
-    st.markdown("<h3 style='color: #475569; font-size: 1.1rem; margin-top: 20px;'>2. QUANTITATIVE METRICS (2024 REGIME)</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #475569; font-size: 1.1rem; margin-top: 25px;'>2. QUANTITATIVE METRICS (2024 REGIME)</h3>", unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     curr_p = c_data.get('new_prob_pct', 0)
     base_p = c_data.get('base_prob_pct', 75)
@@ -124,7 +131,7 @@ def show_final_report(country, w_s, w_r, w_w):
     </div>
     """, unsafe_allow_html=True)
 
-# --- 5. MAIN UI LAYOUT ---
+# --- 6. MAIN UI LAYOUT ---
 st.markdown("<h1 style='color: #0f172a; margin-bottom: 0px; font-weight: 900; letter-spacing: -1px;'>GlobalCharge Intelligence Engine</h1>", unsafe_allow_html=True)
 
 st.markdown("""
@@ -138,15 +145,14 @@ st.markdown("""
 col_map, col_panel = st.columns([7, 3], gap="large")
 
 with col_map:
-    # High-Visibility Map Layout (Light background, Red target scale)
+    # BUG FIX: 'bordercolor' removed from update_geos
     fig = px.choropleth(df, locations="country", locationmode='country names', color="roi_score", color_continuous_scale="Reds")
     fig.update_geos(
         showland=True, landcolor="#f1f5f9", oceancolor="#ffffff", 
-        showframe=False, lakecolor="#ffffff", bordercolor="#cbd5e1"
+        showframe=False, lakecolor="#ffffff" 
     )
-    # +2pt Font Sizing explicitly added to layout for projector clarity
     fig.update_layout(
-        margin={"r":0,"t":0,"l":0,"b":0}, height=600, coloraxis_showscale=False,
+        margin={"r":0,"t":0,"l":0,"b":0}, height=550, coloraxis_showscale=False,
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
         font=dict(family="Helvetica Neue, sans-serif", color="#0f172a", size=16)
     )
@@ -162,6 +168,11 @@ with col_panel:
     if not selected_country or selected_country not in df['country'].values:
         selected_country = manual_sel if manual_sel != "Awaiting Selection..." else None
 
+    # Reset report view if the user clicks a new country
+    if selected_country != st.session_state.last_country:
+        st.session_state.show_report = False
+        st.session_state.last_country = selected_country
+
     if selected_country and selected_country in df['country'].values:
         c_data = df[df['country'] == selected_country].iloc[0]
         st.markdown(f"<h3 style='margin-top: 10px; color: #0f172a; font-weight: 800;'>Target: {selected_country}</h3>", unsafe_allow_html=True)
@@ -175,10 +186,16 @@ with col_panel:
         wr = st.slider("Capacity Weight", 0.0, 2.0, 1.0, step=0.1)
         ww = st.slider("Wealth Weight", 0.0, 2.0, 1.0, step=0.1)
         
+        # When clicked, update session state so the report renders below
         if st.button("EXECUTE PORTFOLIO AUDIT"):
-            show_final_report(selected_country, ws, wr, ww)
+            st.session_state.show_report = True
     else:
         st.markdown("<h3 style='margin-top: 10px; color: #64748b; font-weight: 700;'>Portfolio Overview</h3>", unsafe_allow_html=True)
         st.metric("Capital Mandate", "$100M")
         st.metric("System Precision", "67.7%")
         st.warning("Please select a target market from the map or dropdown to initiate the resilience audit.")
+
+# --- 7. DYNAMIC FULL-WIDTH REPORT SECTION ---
+if st.session_state.show_report and selected_country:
+    st.markdown("<hr style='border: 2px solid #0f172a; margin: 2rem 0;'>", unsafe_allow_html=True)
+    show_final_report(selected_country, ws, wr, ww)
