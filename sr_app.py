@@ -1,171 +1,284 @@
+Conversations
+   
+56% of 15 GB used
+Terms · Privacy · Programme Policies
+Last account activity: 0 minutes ago
+Details
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import os
 
-# ==========================================
-# 1. CORE CONFIGURATION
-# ==========================================
-st.set_page_config(page_title="GlobalCharge | Alpha", layout="wide", initial_sidebar_state="collapsed")
+# 1. STRICT DESIGN & CSS MANDATES
+st.set_page_config(layout="wide", page_title="GlobalCharge Intelligence Engine", initial_sidebar_state="collapsed")
 
-# ==========================================
-# 2. BOARDROOM CSS (NO SCROLL, GRID-LOCKED)
-# ==========================================
-st.markdown("""
+def inject_custom_css():
+    st.markdown("""
     <style>
-    /* Clean, flat institutional background */
-    .stApp { background-color: #f8fafc; color: #0f172a; font-family: 'Helvetica Neue', Arial, sans-serif; }
-    header { visibility: hidden; }
-    footer { visibility: hidden; }
+    /* Viewport Lock */
+    html, body, [data-testid="stAppViewContainer"] {
+        overflow: hidden !important;
+        height: 100vh;
+    }
+    ::-webkit-scrollbar {
+        display: none;
+    }
     
-    /* Lock viewport to prevent global scrolling */
-    html, body, [data-testid="stAppViewContainer"] { overflow: hidden !important; }
-    .block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; max-width: 96% !important; }
+    /* Theme & Typography */
+    body {
+        background-color: #ffffff;
+        color: #1e293b;
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
     
-    /* Hide scrollbars for a clean app feel */
-    ::-webkit-scrollbar { display: none; }
-
-    /* +2pt Enforced Metric Sizing & Red Primary Color */
-    .metric-value { font-size: calc(2.2rem + 2pt); font-weight: 800; color: #dc2626; margin: 0; line-height: 1.1; letter-spacing: -1px; }
-    .metric-label { font-size: calc(0.85rem + 2pt); font-weight: 700; color: #64748b; text-transform: uppercase; margin: 0; padding-bottom: 5px; }
+    /* Typography (+2pt Rule) */
+    [data-testid="stMetricValue"] {
+        font-size: calc(1.8rem + 2pt) !important;
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: calc(0.9rem + 2pt) !important;
+    }
     
-    /* Orange Warning Architecture */
-    .risk-orange { border-left: 4px solid #ea580c; background-color: #fff7ed; padding: 12px 16px; margin: 15px 0; border-radius: 2px; }
-    .risk-orange-text { color: #c2410c; font-weight: 700; font-size: 0.95rem; margin: 0; }
-
-    /* Red Target Architecture */
-    .target-red { border-left: 4px solid #dc2626; background-color: #fef2f2; padding: 12px 16px; margin: 15px 0; border-radius: 2px; }
-    .target-red-text { color: #991b1b; font-weight: 700; font-size: 0.95rem; margin: 0; }
-
-    /* Clean Card Containers */
-    .tearsheet-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 100%; }
-    h3 { font-size: 1.1rem; color: #0f172a; font-weight: 700; text-transform: uppercase; margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-    p { font-size: 0.95rem; color: #334155; line-height: 1.6; }
+    /* Warning/Vulnerability Boxes */
+    .warning-box {
+        background-color: #fff7ed;
+        color: #c2410c;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #ea580c;
+        margin-bottom: 1rem;
+    }
     
-    /* Button Reset to Institutional Flat */
-    .stButton>button { background-color: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 2px; font-weight: 600; width: 100%; transition: 0.2s; }
-    .stButton>button:hover { border-color: #dc2626; color: #dc2626; background-color: #fef2f2; }
+    /* Terminal Block */
+    .terminal-block {
+        background-color: #0f172a;
+        color: #ffffff;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+    
+    /* Buttons */
+    .stButton>button {
+        width: 100%;
+    }
+    
+    /* Hide Deploy/Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Dialog Title Color */
+    div[data-testid="stDialog"] h2 {
+        color: #dc2626 !important;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ==========================================
-# 3. STATE & DATA LOADER
-# ==========================================
-if 'selected_asset' not in st.session_state:
-    st.session_state.selected_asset = "India" # Defaulting to your Group's Emerging Alpha play
+inject_custom_css()
 
+# 2. DATA LOADING & FALLBACK
 @st.cache_data
 def load_data():
-    file = 'war_room_audit_2025.csv'
-    if os.path.exists(file):
-        df = pd.read_csv(file)
-        df.columns = [c.lower() for c in df.columns] 
-        if 'country' not in df.columns:
-            for c in df.columns:
-                if 'name' in c or 'nation' in c: df.rename(columns={c: 'country'}, inplace=True)
-        return df
-    # Fallback for presentation safety
-    return pd.DataFrame({
-        'country': ['India', 'Germany', 'Australia', 'USA', 'France'],
-        'roi_score': [88, 45, 92, 85, 75],
-        'new_prob_pct': [82, 35, 89, 81, 78],
-        'opportunity_gap': [0.823, 0.12, 0.65, 0.55, 0.40],
-        'lagged_share': [5.2, 22.5, 12.0, 9.5, 18.0]
-    })
+    csv_path = "/home/ubuntu/upload/war_room_audit_2025.csv"
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            # Normalize column names to match dummy data requirements
+            df.columns = [c.lower() for c in df.columns]
+            # Ensure required columns exist or map them
+            mapping = {
+                'roi_score': 'roi_score',
+                'new_prob_pct': 'new_prob_pct',
+                'opportunity_gap': 'opportunity_gap',
+                'lagged_share': 'lagged_share',
+                'market_room': 'market_room'
+            }
+            # Add base_prob_pct and purchasing_power if missing (dummy defaults)
+            if 'base_prob_pct' not in df.columns:
+                df['base_prob_pct'] = 85.0
+            if 'purchasing_power' not in df.columns:
+                df['purchasing_power'] = 8.0
+            return df
+        except Exception:
+            pass
+            
+    # Fallback Dummy Data
+    data = {
+        'country': ['India', 'Germany', 'Australia', 'USA', 'Spain', 'Iceland'],
+        'roi_score': [88.5, 45.2, 92.1, 85.0, 52.1, 49.3],
+        'new_prob_pct': [84.6, 28.0, 89.2, 89.2, 77.2, 74.6],
+        'base_prob_pct': [80.0, 95.0, 85.0, 88.0, 85.0, 82.0],
+        'opportunity_gap': [0.846, 0.12, 0.65, 0.55, 0.30, 0.25],
+        'lagged_share': [5.2, 22.5, 12.0, 9.5, 18.0, 19.5],
+        'market_room': [0.95, 0.2, 0.8, 0.7, 0.4, 0.3],
+        'purchasing_power': [4.5, 9.5, 8.5, 9.8, 7.0, 8.0]
+    }
+    return pd.DataFrame(data)
 
 df = load_data()
 
-def get_asset_intel(country):
-    repo = {
-        "India": ("Strategic Buy on the Dip", "The FAME-II transition caused a massive shift toward local manufacturing. Structural population demand vastly outstrips current adoption. Primary Emerging Alpha target for 2026.", True),
-        "Germany": ("Severe Mean Reversion", "Subsidies abruptly removed Dec 2023. Traditional analysis failed here. Sales collapsed 35% early 2024. Avoid deployment until fundamentals stabilize.", False),
-        "Australia": ("Core Safety Target", "Verified structural resilience. Benefiting from recent policy implementations protecting commercial ROI.", True)
+# Initialize session state for selection
+if 'selected_country' not in st.session_state:
+    st.session_state.selected_country = None
+
+# 4. POP-UP DIALOGS
+@st.dialog('📋 OFFICIAL EXECUTIVE AUDIT REPORT', width='large')
+def show_audit_report(country_data):
+    country = country_data['country']
+    st.markdown(f"<h2 style='color: #dc2626;'>{country.upper()}</h2>", unsafe_allow_html=True)
+    
+    c1, c2 = st.columns(2)
+    stage = "Takeoff" if country_data['lagged_share'] < 20 else "Saturated"
+    risk = "Resilient" if country_data['new_prob_pct'] >= 78 else "Policy Vulnerable"
+    risk_color = "#dc2626" if risk == "Policy Vulnerable" else "#16a34a"
+    
+    with c1:
+        st.write("**Market Stage:**")
+        st.markdown(f"<div style='font-size: 1.2rem; font-weight: bold;'>{stage}</div>", unsafe_allow_html=True)
+    with c2:
+        st.write("**AI Risk Profile:**")
+        st.markdown(f"<div style='font-size: 1.2rem; font-weight: bold; color: {risk_color};'>{risk}</div>", unsafe_allow_html=True)
+        
+    m1, m2, m3 = st.columns(3)
+    m1.metric("AI Survival Probability", f"{country_data['new_prob_pct']}%")
+    m2.metric("Opportunity Gap", f"{country_data['opportunity_gap']:.2f}")
+    m3.metric("ROI Potential", f"{country_data['roi_score']:.1f}")
+    
+    # Hardcoded dynamic text
+    verdicts = {
+        "India": ("Emerging Alpha / FAME-II Pivot", "High growth trajectory with policy tailwinds."),
+        "Germany": ("Umweltbonus Shock / Mean Reversion", "Regulatory headwinds affecting short-term outlook."),
+        "Australia": ("NVES Policy Shield", "Protected growth through vehicle efficiency standards.")
     }
-    return repo.get(country, ("GDP Organic S-Curve", "Market fundamentals verified. Proceed with standard capital allocation.", True))
-
-# ==========================================
-# 4. TOP EXECUTIVE BAR
-# ==========================================
-st.markdown("""
-    <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #0f172a; margin-bottom: 15px; padding-bottom: 5px;">
-        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; color: #0f172a;">GlobalCharge Capital :: Quantitative Allocation Engine</h1>
-        <span style="font-weight: 600; color: #64748b; font-size: 0.9rem;">FUND AUM: $500M | DEPLOYMENT MANDATE: $100M</span>
+    context, verdict = verdicts.get(country, ("Standard Portfolio Asset", "Maintain baseline allocation strategy."))
+    
+    st.markdown(f"""
+    <div style="background-color: #f8fafc; padding: 1rem; border-radius: 0.5rem; border-left: 5px solid #dc2626;">
+        <p><strong>Geopolitical Context:</strong> {context}</p>
+        <p><strong>Strategic Verdict:</strong> {verdict}</p>
     </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ==========================================
-# 5. THE 3-COLUMN INSTITUTIONAL MATRIX
-# ==========================================
-col_watch, col_map, col_tear = st.columns([2, 5, 3], gap="medium")
-
-# --- COLUMN 1: THE WATCHLIST (SCRENER) ---
-with col_watch:
-    with st.container(height=650, border=False):
-        st.markdown("<div class='tearsheet-card'>", unsafe_allow_html=True)
-        st.markdown("### ASSET WATCHLIST")
-        st.write("Select market to load regime analytics:")
-        
-        # Clean button list for selection
-        for country in sorted(df['country'].unique()):
-            if st.button(f"{'▶ ' if st.session_state.selected_asset == country else ''}{country}", key=f"btn_{country}"):
-                st.session_state.selected_asset = country
-                st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# --- COLUMN 2: MACRO VISUALIZATION ---
-with col_map:
-    with st.container(height=650, border=False):
-        st.markdown("<div class='tearsheet-card' style='padding: 0;'>", unsafe_allow_html=True)
-        
-        # Plotly Map using Orange scale (replacing standard heat reds)
-        fig = px.choropleth(df, locations="country", locationmode='country names', color="roi_score", color_continuous_scale="Oranges")
-        fig.update_geos(showland=True, landcolor="#f1f5f9", oceancolor="#ffffff", showframe=False, lakecolor="#ffffff")
-        fig.update_layout(
-            margin={"r":0,"t":0,"l":0,"b":0}, height=650, coloraxis_showscale=False,
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color="#0f172a", size=14)
-        )
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# --- COLUMN 3: THE TEAR SHEET ---
-with col_tear:
-    with st.container(height=650, border=False):
-        target = st.session_state.selected_asset
-        c_data = df[df['country'] == target].iloc[0]
-        verdict, context, is_safe = get_asset_intel(target)
-        
-        st.markdown("<div class='tearsheet-card'>", unsafe_allow_html=True)
-        
-        # Header
-        st.markdown(f"<h2 style='margin-top:0; color:#0f172a; font-weight:900; letter-spacing:-1px;'>{target.upper()}</h2>", unsafe_allow_html=True)
-        
-        # Risk Flags (Strict Orange vs Red)
-        if not is_safe:
-            st.markdown(f"""<div class='risk-orange'><p class='risk-orange-text'>
-                WARNING: REGIME SHIFT DETECTED<br>Model flags high vulnerability to policy shocks.
-            </p></div>""", unsafe_allow_html=True)
-        else:
-            st.markdown(f"""<div class='target-red'><p class='target-red-text'>
-                STRUCTURALLY RESILIENT<br>Market fundamentals pass temporal stress tests.
-            </p></div>""", unsafe_allow_html=True)
-        
-        # Scaled Metrics Grid
-        m1, m2 = st.columns(2)
-        with m1:
-            st.markdown(f"<p class='metric-label'>AI Confidence</p><p class='metric-value'>{c_data.get('new_prob_pct', 0):.1f}%</p>", unsafe_allow_html=True)
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f"<p class='metric-label'>Market Share</p><p class='metric-value'>{c_data.get('lagged_share', 0):.1f}%</p>", unsafe_allow_html=True)
-        with m2:
-            st.markdown(f"<p class='metric-label'>Alpha Gap</p><p class='metric-value'>{c_data.get('opportunity_gap', 0):.3f}</p>", unsafe_allow_html=True)
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f"<p class='metric-label'>Target ROI</p><p class='metric-value'>{c_data.get('roi_score', 0):.1f}</p>", unsafe_allow_html=True)
+@st.dialog('📊 SYSTEM ANALYTICS & MACRO PORTFOLIO', width='large')
+def show_system_analytics():
+    tab1, tab2 = st.tabs(["[ ALPHA VALUATION MATRIX ]", "[ 2024 REGIME STRESS TEST ]"])
+    
+    with tab1:
+        # Color mapping logic
+        def get_color(c):
+            if c == 'India': return '#dc2626' # Red
+            if c in ['USA', 'Australia']: return '#0f172a' # Slate
+            if c in ['Germany', 'Spain', 'Iceland']: return '#ea580c' # Orange
+            return '#64748b'
             
-        st.markdown("<hr style='border-color: #f1f5f9; margin: 25px 0;'>", unsafe_allow_html=True)
+        df_plot = df.copy()
+        df_plot['color'] = df_plot['country'].apply(get_color)
         
-        # Qualitative Intel
-        st.markdown(f"<h3 style='border:none; padding:0;'>STRATEGIC VERDICT</h3>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-weight:700; color:#dc2626; margin-bottom:5px;'>{verdict}</p>", unsafe_allow_html=True)
-        st.markdown(f"<p>{context}</p>", unsafe_allow_html=True)
+        fig = px.scatter(df_plot, x='new_prob_pct', y='opportunity_gap', 
+                         color='country', color_discrete_map={c: get_color(c) for c in df_plot['country']},
+                         title="Alpha Confidence vs Opportunity Gap")
         
-        st.markdown("</div>", unsafe_allow_html=True)
+        fig.add_vline(x=78, line_dash="dash", line_color="#dc2626", 
+                      annotation_text="78% MARGIN OF SAFETY THRESHOLD", 
+                      annotation_position="top right")
+        
+        fig.update_layout(
+            font=dict(size=14),
+            xaxis_title="AI_Confidence (%)",
+            yaxis_title="Opportunity_Gap",
+            plot_bgcolor='white'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with tab2:
+        categories = ["RF", "NB", "KNN"]
+        baseline = [84.1, 82.5, 83.2]
+        regime_shift = [65.6, 52.4, 46.9]
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name='2023 Baseline', x=categories, y=baseline, marker_color='#0f172a'))
+        
+        # Colors for regime shift
+        colors = ['#dc2626', '#ea580c', '#ea580c']
+        fig.add_trace(go.Bar(name='2024 Regime Shift', x=categories, y=regime_shift, marker_color=colors))
+        
+        fig.update_layout(
+            barmode='group',
+            title="Model Accuracy: Baseline vs Regime Shift",
+            font=dict(size=14),
+            plot_bgcolor='white'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+# 3. MAIN SCREEN ARCHITECTURE
+st.markdown("<h1 style='margin-bottom: 0;'>GlobalCharge Intelligence Engine</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #64748b; font-weight: bold; margin-bottom: 2rem;'>EXECUTIVE INVESTMENT DASHBOARD | REGIME-AWARE AUDIT</p>", unsafe_allow_html=True)
+
+col_map, col_panel = st.columns([7.2, 2.8], gap="large")
+
+with col_map:
+    fig_map = px.choropleth(df, locations="country", locationmode='country names',
+                            color="roi_score", color_continuous_scale="Reds")
+    fig_map.update_layout(
+        geo=dict(showframe=False, showcoastlines=True, projection_type='equirectangular',
+                 lakecolor='white', oceancolor='white'),
+        margin=dict(l=0, r=0, t=0, b=0),
+        coloraxis_showscale=False
+    )
+    
+    selected = st.plotly_chart(fig_map, use_container_width=True, on_select="rerun")
+    
+    # Handle map selection
+    if selected and "selection" in selected and "points" in selected["selection"] and len(selected["selection"]["points"]) > 0:
+        point = selected["selection"]["points"][0]
+        # Find country by index if possible or location
+        if "location" in point:
+            st.session_state.selected_country = point["location"]
+
+with col_panel:
+    # Fallback selectbox
+    selected_country_name = st.selectbox("Select Target Country", options=[None] + list(df['country'].unique()), 
+                                         index=0 if st.session_state.selected_country is None else list(df['country'].unique()).index(st.session_state.selected_country) + 1,
+                                         key="country_selector")
+    
+    if selected_country_name:
+        st.session_state.selected_country = selected_country_name
+        
+    if st.session_state.selected_country is None:
+        st.markdown("### Portfolio Audit")
+        m1, m2 = st.columns(2)
+        m1.metric("$100M Mandate", "Active")
+        m2.metric("Precision", "67.7%")
+        st.markdown('<div class="warning-box">Awaiting Input: Select a country</div>', unsafe_allow_html=True)
+    else:
+        country_data = df[df['country'] == st.session_state.selected_country].iloc[0]
+        st.markdown(f"### Target: {st.session_state.selected_country}")
+        st.metric("ROI Score", f"{country_data['roi_score']:.1f}")
+        st.metric("AI Confidence", f"{country_data['new_prob_pct']}%")
+        
+        st.slider("Resilience", 0.0, 2.0, 1.0)
+        st.slider("Market Room", 0.0, 2.0, float(country_data['market_room']))
+        st.slider("Wealth", 0.0, 2.0, 1.0)
+        
+        if st.button("GENERATE EXECUTIVE AUDIT", type="primary"):
+            show_audit_report(country_data)
+            
+    st.write("") # Spacer
+    
+    if st.button("📊 OPEN SYSTEM ANALYTICS"):
+        show_system_analytics()
+        
+    st.markdown("""
+    <div class="terminal-block">
+        <div style="font-weight: bold; margin-bottom: 5px;">⚙️ ACTIVE ML ARCHITECTURE</div>
+        <div>LAYER 1: HMM (Regime Detection)</div>
+        <div>LAYER 2: NLP (90-Day Sentiment Lead)</div>
+        <div>LAYER 3: Random Forest (n=100, d=4)</div>
+        <div style="margin-top: 5px;">STATE: <span style="color: #ef4444; font-weight: bold;">LOCKED (NO 2024 LEAKAGE)</span></div>
+    </div>
+    """, unsafe_allow_html=True)
