@@ -71,7 +71,7 @@ def load_data():
                 if 'name' in c or 'nation' in c: df.rename(columns={c: 'country'}, inplace=True)
         return df
     
-    # Fallback dummy data if CSV is not found to prevent app crash
+    # Fallback dummy data if CSV is not found
     return pd.DataFrame({
         'country': ['India', 'Germany', 'Australia', 'USA', 'Spain', 'Iceland'],
         'roi_score': [610.5, 372.2, 502.7, 692.4, 210.4, 179.0],
@@ -87,16 +87,16 @@ df = load_data()
 
 def get_detailed_intel(country, c_data, custom_roi):
     repo = {
-        "Belgium": ("⚖️ Fiscal Dominance & The Company Car Mandate", "**2023-2024 Regime Shift:** Belgium's market is uniquely shielded by its 'Company Car' tax structure. In 2024, the government mandated that only zero-emission company vehicles qualify for 100% tax deductibility.", f"**Strategic Verdict:** Defensive Safe Haven. Highly stable region for long-term infrastructure ROI."),
-        "Australia": ("🛡️ NVES Policy Shield & The FBT Exemption", "**2023-2024 Regime Shift:** Australia successfully avoided the 2024 European crash by implementing the New Vehicle Efficiency Standard (NVES). Combined with the Fringe Benefits Tax exemption, commercial ROI has surged.", f"**Strategic Verdict:** Core Growth Target. Structural tax advantage makes EV ownership cheaper than ICE."),
-        "India": ("🐘 The EMPS Pivot & Emerging Alpha", "**2023-2024 Regime Shift:** The pivot from FAME-II to EMPS caused a temporary supply plateau. However, the 2024 PLI manufacturing incentive has forced global giants into localized production talks.", f"**Strategic Verdict:** Emerging Alpha play. Holds the largest 'Opportunity Gap' in the fund. Deployment here targets the 2026-2028 S-Curve breakout."),
-        "France": ("🇫🇷 The 'Eco-Score' Moat", "**2023-2024 Regime Shift:** France's 2024 'Eco-Score' effectively subsidized European-made EVs while taxing Asian imports. Sovereign protectionism stabilized domestic ROI.", f"**Strategic Verdict:** Protected Mature market. Highly resilient to the 2024 Chaos Regime."),
-        "Germany": ("⚠️ The 'Umweltbonus' Shock & Subsidy Cliff", "**2023-2024 Regime Shift:** The Dec 2023 constitutional court ruling forced an immediate end to all EV subsidies. This proved German adoption was an artificial bubble. Sales collapsed 35%.", f"**Strategic Verdict:** HIGH VOLATILITY. Human veto recommended. Political regime shift makes capital deployment risky.")
+        "Belgium": ("⚖️ Fiscal Dominance & The Company Car Mandate", "**2023-2024 Regime Shift:** Belgium's market is uniquely shielded by its 'Company Car' tax structure. In 2024, the government mandated that only zero-emission company vehicles qualify for 100% tax deductibility. This created an artificial but highly resilient 'floor' for adoption, completely bypassing the consumer interest rate anxieties seen in Germany.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** Belgium is a 'Defensive Safe Haven'. While adoption is high (41%), the structural tax mandate makes it one of the most stable regions for long-term infrastructure ROI, as corporate fleet turnover is mandatory, not optional."),
+        "Australia": ("🛡️ NVES Policy Shield & The FBT Exemption", "**2023-2024 Regime Shift:** Australia successfully avoided the 2024 European crash by implementing the New Vehicle Efficiency Standard (NVES). Combined with the ongoing Fringe Benefits Tax (FBT) exemption, the ROI for commercial and private charging has surged, making Australia the primary 'Takeoff' market of the year.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** Australia remains our #1 Core Growth Target. The 12% share provides exponential room for growth, and the structural tax advantage makes EV ownership cheaper than ICE for the middle class."),
+        "India": ("🐘 The EMPS Pivot & The 0.88 Opportunity Alpha", "**2023-2024 Regime Shift:** India's pivot from FAME-II to the EMPS scheme caused a temporary supply-side plateau. However, the 2024 manufacturing incentive (PLI) has forced global giants like VinFast and Tesla into localized production talks. The AI identifies this as a 'Strategic Buy on the Dip'.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** India holds the largest 'Opportunity Gap' in the fund. Deployment here targets the 2026-2028 S-Curve breakout. It is the portfolio's primary Emerging Alpha play."),
+        "France": ("🇫🇷 The 'Eco-Score' Moat & Sovereign Protection", "**2023-2024 Regime Shift:** France's 2024 'Eco-Score' redefined subsidies to exclude carbon-intensive shipping. This effectively subsidized European-made EVs while taxing Asian imports. This sovereign protectionism has stabilized domestic ROI against global price volatility.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** A 'Protected Mature' market. France is highly resilient to the 2024 Chaos Regime because its policy actively shields domestic margins from the Chinese price wars."),
+        "Germany": ("⚠️ The 'Umweltbonus' Shock & Subsidy Cliff", "**2023-2024 Regime Shift:** The Dec 2023 constitutional court ruling forced an immediate end to all EV subsidies. This 'Policy Heart Attack' proved that German adoption was an artificial bubble. Sales collapsed 35% in early 2024 as the market entered a 'Mean Reversion' phase.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** HIGH VOLATILITY. We recommend a human veto until H2 2025. The AI identifies high structural wealth, but the current political regime shift makes capital deployment risky.")
     }
     res = repo.get(country)
     if res: return res
     gap = c_data.get('opportunity_gap', 0.5)
-    return (f"🔍 Structural Resilience Audit: {country}", "**2023-24 Dynamics:** Adoption is shielded from European political volatility by organic wealth growth and non-tariffed supply chains.", f"**Strategic Verdict:** Stable deployment target with an Opportunity Gap of {gap:.2f}.")
+    return (f"🔍 Structural Resilience Audit: {country}", f"**2023-24 Dynamics:** Adoption is shielded from the European political volatility by organic wealth growth and the redirection of global supply chains toward non-tariffed regions.", f"**Strategic Verdict (ROI {custom_roi:.1f}):** Stable deployment target with an Opportunity Gap of {gap:.2f}. Growth is driven by long-term infrastructure expansion rather than fickle state aid.")
 
 # ==========================================
 # 3. POP-UP 1: SYSTEM ANALYTICS (TABS)
@@ -121,12 +121,15 @@ def show_system_analytics():
         )
         fig_scatter.update_traces(textposition='top center', textfont=dict(size=14, color="#0f172a"), marker=dict(size=16, line=dict(width=2, color='#ffffff')))
         fig_scatter.add_vline(x=78, line_width=2, line_dash="dash", line_color="#dc2626")
-        fig_scatter.add_annotation(x=77.5, y=0.8, text="78% MARGIN OF SAFETY THRESHOLD", showarrow=False, textangle=-90, font=dict(color="#dc2626", size=14, weight="bold"))
+        
+        # BUG FIX: Removed 'weight' param and used standard <b> tags
+        fig_scatter.add_annotation(x=77.5, y=0.8, text="<b>78% MARGIN OF SAFETY THRESHOLD</b>", showarrow=False, textangle=-90, font=dict(color="#dc2626", size=14))
+        
         fig_scatter.update_layout(
             height=450, margin=dict(l=0, r=0, t=10, b=0),
-            xaxis=dict(title="AI Survival Probability (%)", tickfont=dict(size=14), titlefont=dict(size=14, weight="bold")),
-            yaxis=dict(title="Opportunity Gap (Alpha)", tickfont=dict(size=14), titlefont=dict(size=14, weight="bold")),
-            legend=dict(title="", font=dict(size=14), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            xaxis=dict(title="<b>AI Survival Probability (%)</b>", tickfont=dict(size=14), titlefont=dict(size=14)),
+            yaxis=dict(title="<b>Opportunity Gap (Alpha)</b>", tickfont=dict(size=14), titlefont=dict(size=14)),
+            legend=dict(font=dict(size=14), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         st.plotly_chart(fig_scatter, use_container_width=True, config={'displayModeBar': False})
 
@@ -149,11 +152,12 @@ def show_system_analytics():
         colors = ['#dc2626' if m == 'Random Forest' else '#ea580c' for m in df_crash['Model']]
         fig_bar.add_trace(go.Bar(x=df_crash['Model'], y=df_crash['Accuracy'], name='2024 Regime Shift', marker_color=colors))
         
+        # BUG FIX: Removed 'weight' param and used standard <b> tags
         fig_bar.update_layout(
             barmode='group', height=450, margin=dict(l=0, r=0, t=10, b=0),
             xaxis=dict(tickfont=dict(size=14)),
-            yaxis=dict(title="Accuracy (%)", tickfont=dict(size=14), titlefont=dict(size=14, weight="bold")),
-            legend=dict(title="", font=dict(size=14), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            yaxis=dict(title="<b>Accuracy (%)</b>", tickfont=dict(size=14), titlefont=dict(size=14)),
+            legend=dict(font=dict(size=14), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
 
