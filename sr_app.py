@@ -1,10 +1,3 @@
-Conversations
-   
-56% of 15 GB used
-Terms · Privacy · Programme Policies
-Last account activity: 0 minutes ago
-Details
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
