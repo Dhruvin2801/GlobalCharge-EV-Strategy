@@ -229,8 +229,26 @@ def show_final_report(country, w_s, w_r, w_w):
     c_data = df[df['country'] == country].iloc[0]
     prob = c_data.get('new_prob_pct', 80) / 100
     room = c_data.get('market_room', 0.5)
-    wealth = c_data.get('purchasing_power', 5)
-    custom_roi = ((prob**w_s) * (room**w_r) * (wealth**w_w)) / (1.5) * 100
+    
+    # Extract GDP per capita for Wealth scaling (centered around $40,000 global average)
+    wealth = c_data.get('gdp_per_capita', c_data.get('purchasing_power', 40000))
+    base_roi = c_data.get('roi_score', 500)
+    
+    # ⚙️ MATHEMATICAL FIX: Centered Mandate Multipliers 
+    # If slider > 1.0, it amplifies the country's deviation from the average.
+    
+    # 1. Resilience Mod (Centers at 50% probability)
+    mod_s = max(0.1, 1 + (w_s - 1.0) * (prob - 0.5) * 2)
+    
+    # 2. Market Room Mod (Centers at 50% room)
+    mod_r = max(0.1, 1 + (w_r - 1.0) * (room - 0.5) * 2)
+    
+    # 3. Wealth Mod (Centers at $40,000 GDP, capped at 2x to prevent infinity spikes)
+    norm_w = min(wealth / 40000, 2.0) 
+    mod_w = max(0.1, 1 + (w_w - 1.0) * (norm_w - 1.0))
+    
+    # Final dynamic ROI
+    custom_roi = base_roi * mod_s * mod_r * mod_w
     
     headline, context, verdict = get_detailed_intel(country, c_data, custom_roi)
     
@@ -256,7 +274,7 @@ def show_final_report(country, w_s, w_r, w_w):
     base_p = c_data.get('base_prob_pct', 75)
     m1.metric("AI Confidence", f"{curr_p:.1f}%", f"{curr_p - base_p:+.1f}% vs Baseline")
     m2.metric("Opportunity Gap", f"{c_data.get('opportunity_gap', 0):.2f}", "Alpha Index")
-    m3.metric("ROI Potential Index", f"{custom_roi:.1f}", "Scaled Score")
+    m3.metric("ROI Potential Index", f"{custom_roi:,.0f}", "Scaled Score")
 
     # SECTION 3: Deep Intel Box
     st.markdown(f"""
